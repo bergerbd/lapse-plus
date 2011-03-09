@@ -9,6 +9,7 @@ import java.util.Map;
 
 import lapsePlus.LapsePlugin;
 
+import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
@@ -20,7 +21,9 @@ import org.eclipse.jdt.core.dom.VariableDeclaration;
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 
 public class DeclarationInfoManager {
+	
 	static Map<CompilationUnit, DeclarationInfo> unit2info = new HashMap<CompilationUnit, DeclarationInfo>();
+	//static Map<CompilationUnit, DeclarationInfo> unit2info;
 	
 	public static DeclarationInfo retrieveDeclarationInfo(CompilationUnit unit) {
 		DeclarationInfo info  = (DeclarationInfo) unit2info.get(unit);
@@ -35,6 +38,12 @@ public class DeclarationInfoManager {
 		
 		return info;
 	}
+	
+	/*public static void initializeDeclarationMap(){
+		
+		unit2info = new HashMap<CompilationUnit, DeclarationInfo>();
+		
+	}*/
 	
 	public static class DeclarationInfo {
 		

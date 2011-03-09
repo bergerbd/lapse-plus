@@ -102,6 +102,8 @@ import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.texteditor.ITextEditor;
 
 public class SinkView extends ViewPart {
+	
+	
     static final String MARKER_ID = "lapse.SQLMarker";
     private static final int MESSAGE_FIELD = 0;
     private static final int TYPE_FIELD = 1;
@@ -1348,8 +1350,11 @@ public class SinkView extends ViewPart {
     private static void logError(String message) {
         log(message, new Throwable());
     }
+    
     public static boolean isDerivationName(String identifier) {
+    	
 		Collection derivators = XMLConfig.readDerivators("derived.xml");
+		
 		for(Iterator iter = derivators.iterator(); iter.hasNext(); ){
 			XMLConfig.DerivationDescription derivationDesc = (XMLConfig.DerivationDescription) iter.next();
 			int i=derivationDesc.getMethodName().lastIndexOf('.');

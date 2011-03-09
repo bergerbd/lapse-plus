@@ -761,6 +761,7 @@ public class LapseView extends ViewPart{
 	}
 	
 	static boolean isFinal(SimpleName sn, CompilationUnit cu, IResource resource){
+		
 		DeclarationInfoManager.DeclarationInfo info = DeclarationInfoManager.retrieveDeclarationInfo(cu);
 		return info.isFinal(sn);
 	}
