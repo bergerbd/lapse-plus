@@ -15,7 +15,9 @@ The vulnerabilities detected by LAPSE+ are related to the injection of untrusted
 The detection of these kind of vulnerabilities is performed in three steps:
 
   # *Vulnerability Source.* First, the tool detects the points of code that can be source of an attack of malicious data injection.
+
   # *Vulnerability Sink.* After detecting the points of code that can be target of data injection, LAPSE+ identifies the points that can propagate the attack and manipulate the behaviour of the application.
+
   # *Provenance Tracker.* Finally, we check if we can reach a Vulnerability Source from a Vulnerability Sink. It this occurs, we have a vulnerability in our code.
 
 = LAPSE+ Views=
@@ -25,11 +27,21 @@ LAPSE+ plugin provides three different views for the analysis of vulnerabilities
 == Vulnerability Sources View ==
 This view shows the points of code that can be source of untrusted data injection.
 
+[http://img200.imageshack.us/img200/6356/sourcesf.png]
+
+
+
 == Vulnerability Sinks View ==
 This view shows the points of code that can insert the untrusted data in the application, manipulating its behaviour.
 
+[http://img19.imageshack.us/img19/3266/sinks.png]
+
 == Provenance Tracker View ==
 This view traces the backward propagation tree from a vulnerability sink in order to check if it reaches a vulnerability source. If this happens we hava a vulnerability in our code.
+
+[http://img155.imageshack.us/img155/6168/propagation1.png]
+
+Uploaded with [URL=http://imageshack.us]ImageShack.us[/URL]
 
 = Vulnerabilities Detected by LAPSE+ =
 
