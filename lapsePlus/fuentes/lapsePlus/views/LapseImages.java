@@ -25,6 +25,7 @@ public class LapseImages {
 	public static final String SETFOCUS= "setfocus.gif"; //$NON-NLS-1$
 	public static final String REFRESH= "refresh.gif"; //$NON-NLS-1$
 
+	public static final String STATISTICS= "statistics.gif"; //$NON-NLS-1$
 	
 	//---- Helper methods to access icons on the file system --------------------------------------
 	public static void setImageDescriptors(IAction action, String type) {

@@ -260,7 +260,9 @@ public class SinkView extends ViewPart {
         showXPathAction;
     private Clipboard fClipboard;
     private StatisticsManager statisticsManager = new StatisticsManager();
+    
     class StatisticsManager {
+    	
         private Collection<ViewMatch> matches = new LinkedList<ViewMatch>();
         HashMap<String, Integer> map = new HashMap<String, Integer>();
         private HashMap<String, Boolean> categories = new HashMap<String, Boolean>();
@@ -271,15 +273,25 @@ public class SinkView extends ViewPart {
 
         public void gatherStatistics() {
             if (map.size() > 0) matches.clear(); // clear the map
+            
             for (Iterator iter = matches.iterator(); iter.hasNext();) {
+            	
                 ViewMatch match = (ViewMatch) iter.next();
+                
                 inc("total.all");
+                
                 if (match.isError()) inc("unsafe.all");
+                
                 if (match.hasSource() && match.isError()) inc("source+unsafe.all");
+                
                 inc("total." + match.getCategory());
+                
                 if (match.isError()) inc("unsafe." + match.getCategory());
+                
                 if (match.isError() && match.hasSource) inc("source+unsafe." + match.getCategory());
+                
                 categories.put(match.getCategory(), null);
+                
                 if (match.hasSource()) inc("source.all");
             }
         }
@@ -291,22 +303,95 @@ public class SinkView extends ViewPart {
         public String getStatistics() {
             if (map.size() == 0) gatherStatistics();
             StringBuffer result = new StringBuffer();
-            result.append("\n\nStatistics block:\n");
+            result.append("Statistics block:\n");
             result.append(getKey("all"));
+            
+            int totalAll=0;
+            int sourceAll=0;
+            int unsafeAll=0;
+            int sourceUnsafeAll=0;
+            
+            if(totalAll==-1){
+            	
+            	totalAll=0;
+            }
+            
+            if(sourceAll==-1){
+            	sourceAll=0;
+            }
+            
+            if(unsafeAll==-1){
+            	unsafeAll=0;
+            }
+            
+            if(sourceUnsafeAll==-1){
+            	
+            	sourceUnsafeAll=0;
+            }
+            
+            
             for (Iterator iter = categories.keySet().iterator(); iter.hasNext();) {
                 String category = (String) iter.next();
                 result.append(getKey(category));
             }
-            result.append("Out of " + get("total.all") + " sinks, " + get("source.all")
+            
+            totalAll=get("total.all");
+            sourceAll=get("source.all");
+            unsafeAll=get("unsafe.all");
+            sourceUnsafeAll=get("source+unsafe.all");
+            
+            if(totalAll==-1){
+            	
+            	totalAll=0;
+            }
+            
+            if(sourceAll==-1){
+            	sourceAll=0;
+            }
+            
+            if(unsafeAll==-1){
+            	unsafeAll=0;
+            }
+            
+            if(sourceUnsafeAll==-1){
+            	
+            	sourceUnsafeAll=0;
+            }
+            
+            
+            result.append("Out of " + totalAll + " sinks, " + sourceAll
                 + " occur in the source.\n");
-            result.append("Out of " + get("unsafe.all") + " unsafe sinks, "
-                + get("source+unsafe.all") + " occur in the source.\n");
+            
+            
+            result.append("Out of " + unsafeAll + " unsafe sinks, "
+                + sourceUnsafeAll + " occur in the source.\n");
+            
+            
+            
             return result.toString();
         }
 
         private String getKey(String key) {
-            return ("\t" + cutto(key, 20) + "\tTotal:\t" + get("total." + key) + ",\tunsafe:\t"
-                + get("unsafe." + key) + ",\tin source:\t" + get("source+unsafe." + key) + "\n");
+        	
+        	int total=get("total." + key);
+        	int source=get("source+unsafe." + key);
+        	int unsafe=get("unsafe." + key);
+        	
+        	if(total==-1){
+        		
+        		total=0;
+        	}
+        	
+        	if(source==-1){
+        		source=0;
+        	}
+        	
+        	if(unsafe==-1){
+        		unsafe=0;
+        	}
+        	
+            return ("\t" + cutto(key, 20) + "\tTotal:\t" + total + ",\tunsafe:\t"
+                + unsafe + ",\tin source:\t" + source + "\n");
         }
 
         private void inc(String key) {
@@ -523,13 +608,15 @@ public class SinkView extends ViewPart {
     }
 
     private void fillContextMenu(IMenuManager manager) {
-        manager.add(runAction);
-        manager.add(copyToClipboardAction);
+        
         ViewMatch match = (ViewMatch) ((IStructuredSelection) viewer.getSelection())
             .getFirstElement();
         if (match != null && match.isError()) {
             manager.add(doBackwardPropagationAction);
         }
+        manager.add(runAction);
+        manager.add(copyToClipboardAction);
+        
         // Other plug-ins can contribute there actions here
         manager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
     }
@@ -545,14 +632,15 @@ public class SinkView extends ViewPart {
     }
 
     private void computeSinks() {
-        (new Job("Computing vulnerability sinks") {
+        (new Job("Computing Sinks") {
+        	
             protected IStatus run(final IProgressMonitor monitor) {
                 final ViewContentProvider cp = ((ViewContentProvider) viewer.getContentProvider());
                 cp.clearMatches();
                 Display.getDefault().syncExec(new Runnable() {
                     public void run() {
                         if (cp.getMatchCount() > 0) {
-                            monitor.subTask("Clearning the results.");
+                            monitor.subTask("Clearing the results");
                             viewer.refresh();
                         }
                     }
@@ -575,8 +663,7 @@ public class SinkView extends ViewPart {
                     // System.out.println("Skipping " + project);
                     // continue;
                     // }
-                    log("------------------ Project "
-                        + cutto(project.getProject().getName(), 20) + "------------------ ");
+                    log("------------------ Project "+ cutto(project.getProject().getName(), 20) + "------------------ ");
                     int matches = 0, unsafe = 0;
                     for (Iterator descIter = sinks.iterator(); descIter.hasNext();) {
                         XMLConfig.SinkDescription desc = (SinkDescription) descIter.next();
@@ -681,7 +768,7 @@ public class SinkView extends ViewPart {
                     Matches + ")" );
                 log("\n" + cutto("All projects", 20) + "\t:\t" + Matches
                     + "\ttotal sink(s),\t" + Unsafe + "\tunsafe sink(s)");
-                statisticsManager.printStatistics();
+                //statisticsManager.printStatistics();
                 return Status.OK_STATUS;
             }
         }).schedule();
@@ -771,7 +858,7 @@ public class SinkView extends ViewPart {
         
         runAction.setText("Find sinks");
         runAction.setToolTipText("Find sinks");
-        runAction.setImageDescriptor(JavaPluginImages.DESC_OBJS_FIXABLE_ERROR);
+        runAction.setImageDescriptor(JavaPluginImages.DESC_OBJS_JSEARCH);
         setSafeAction = new Action() {
             public void run() {
                 Object[] matches = ((IStructuredSelection) viewer.getSelection()).toArray();
@@ -786,8 +873,8 @@ public class SinkView extends ViewPart {
             }
         };
         
-        setSafeAction.setText("Toggle safe status.");
-        setSafeAction.setToolTipText("Toggle safe status.");
+        setSafeAction.setText("Toggle safe status");
+        setSafeAction.setToolTipText("Toggle safe status");
         // setSafeAction.setImageDescriptor(JavaPluginImages.DESC_DLCL_FILTER);
         JavaPluginImages.setLocalImageDescriptors(setSafeAction, "clear_co.gif");
         doBackwardPropagationAction = new Action() {
@@ -838,10 +925,11 @@ public class SinkView extends ViewPart {
         doBackwardPropagationAction.setText("Perform backward propagation from this sink");
         doBackwardPropagationAction.setToolTipText("Perform backward propagation from this sink");
         doBackwardPropagationAction.setImageDescriptor(JavaPluginImages.DESC_ELCL_VIEW_MENU); // TODO
+        
         copyToClipboardAction = new CopyMatchViewAction(this, fClipboard);
         copyToClipboardAction.setText("Copy selection to clipboard");
         copyToClipboardAction.setToolTipText("Copy selection to clipboard");
-        copyToClipboardAction.setImageDescriptor(JavaPluginImages.DESC_ELCL_CODE_ASSIST);
+        copyToClipboardAction.setImageDescriptor(JavaPluginImages.DESC_DLCL_COPY_QUALIFIED_NAME);
         doubleClickAction = new Action() {
             public void run() {
                 IStructuredSelection sel = (IStructuredSelection) viewer.getSelection();
@@ -1100,7 +1188,8 @@ public class SinkView extends ViewPart {
             };
             statAction.setText("Get sink statistics");
             statAction.setToolTipText("Get sink statistics");
-            ImageDescriptor desc = JavaPluginImages.DESC_OBJS_IMPCONT;
+            //JavaPluginImages.setLocalImageDescriptors(statAction, "statistics.gif");
+            ImageDescriptor desc = JavaPluginImages.DESC_OBJS_LIBRARY;
             statAction.setImageDescriptor(desc);
         }
     }

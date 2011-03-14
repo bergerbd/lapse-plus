@@ -447,7 +447,7 @@ public class SourceView extends ViewPart {
 	
 	private void computeSources() {
 		
-		(new Job("Computing sources") { 
+		(new Job("Computing Sources") {
 		protected IStatus run(IProgressMonitor monitor) {
 			
 			

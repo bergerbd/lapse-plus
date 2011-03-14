@@ -12,7 +12,7 @@
       <view
             allowMultiple="false"
             class="lapsePlus.views.LapseView"
-            icon="icons/owasp.gif"
+            icon="icons/owasp2.jpg"
             category="lapsePlus"
             name="Provenance Tracker"
             id="lapsePlus.views.lapse">
@@ -21,14 +21,14 @@
             allowMultiple="false"
             category="lapsePlus"
             class="lapsePlus.views.SourceView"
-            icon="icons/owasp.gif"
+            icon="icons/owasp2.jpg"
             id="lapse.views.SQLSourceView"
             name="Vulnerability Sources"/>                        
       <view
             allowMultiple="false"
             category="lapsePlus"
             class="lapsePlus.views.SinkView"
-            icon="icons/owasp.gif"
+            icon="icons/owasp2.jpg"
             id="lapsePlus.views.SinkView"
             name="Vulnerability Sinks"/>      
    </extension>

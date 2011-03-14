@@ -616,7 +616,7 @@ public class LapseView extends ViewPart{
 			copyAction.setText("Copy to clipboard");
 			copyAction.setToolTipText("Copy to clipboard");
 			copyAction.setEnabled(true);
-			copyAction.setImageDescriptor(JavaPluginImages.DESC_ELCL_CODE_ASSIST);
+			copyAction.setImageDescriptor(JavaPluginImages.DESC_DLCL_COPY_QUALIFIED_NAME);
 		}
 		{
 			selectAllAction = new Action() {

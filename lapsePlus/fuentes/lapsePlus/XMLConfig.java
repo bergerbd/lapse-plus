@@ -25,7 +25,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 public class XMLConfig {
-	private static boolean TRACE = true;
+	private static boolean TRACE = false;
 	static Map<IMethod, SinkDescription> method2desc = new HashMap<IMethod, SinkDescription>();
 
 	public static class SinkDescription {
@@ -33,7 +33,6 @@ public class XMLConfig {
 			return vulnerableParameter;
 		}
 		String id, typeName, methodName, categoryName;
-		private int parameterCount;
 		private int vulnerableParameter;		
 		
 		protected SinkDescription(String id, String typeName, String methodName, String categoryName, 
@@ -43,7 +42,6 @@ public class XMLConfig {
 			this.typeName = typeName;
 			this.methodName = methodName;
 			this.categoryName = categoryName;
-			this.parameterCount = parameterCount;
 			this.vulnerableParameter = vulnerableParameter; 
 		}
 
@@ -65,7 +63,6 @@ public class XMLConfig {
 			this.typeName = id.substring(0, dot_index);
 			this.methodName = id.substring(0, left_bracker_idx);
 			this.categoryName = categoryName;
-			this.parameterCount = comma_count+1;
 			this.vulnerableParameter = vulnerableParameter; 
 		}
 
@@ -203,6 +200,7 @@ public class XMLConfig {
     	Collection<SourceDescription> sources           = readSources("sources.xml", "");
     	Collection<SinkDescription> sinks 	            = readSinks("sinks.xml", "");
     	Collection<DerivationDescription> derived 	    = readDerivators("derived.xml", "");
+    	
         if(TRACE) {
             System.out.println(sources);
             System.out.println(sinks);

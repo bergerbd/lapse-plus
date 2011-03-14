@@ -28,10 +28,11 @@ class LapseConfigurationDialog extends StatusDialog {
     private Text fMaxCallDepth;
     private Text fMaxCallers;
     // checkboxes
-    private Button fInitialUse;
+    
+    /*private Button fInitialUse;
     private Button fFilterOnNames;
     private Button fFormalParameters;
-    private Button fLocalDeclarations;
+    private Button fLocalDeclarations;*/
     private Button fFollowCalls;
     private Button fLimitPropDepth;
 
