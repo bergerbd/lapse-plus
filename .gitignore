@@ -1,1 +1,5 @@
 *.class
+src/lapse-plus.site/artifacts.jar
+src/lapse-plus.site/content.jar
+src/lapse-plus.site/features
+src/lapse-plus.site/plugins
