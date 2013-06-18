@@ -20,11 +20,13 @@ import lapsePlus.CallerFinder;
 import lapsePlus.LapsePlugin;
 import lapsePlus.Utils;
 import lapsePlus.XMLConfig;
+import lapsePlus.XMLConfig.DerivationDescription;
 import lapsePlus.XMLConfig.SinkDescription;
 import lapsePlus.views.LapseView.SlicingFromSinkJob;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -58,7 +60,6 @@ import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
-import org.eclipse.jface.util.Assert;
 import org.eclipse.jface.viewers.ColumnLayoutData;
 import org.eclipse.jface.viewers.ColumnPixelData;
 import org.eclipse.jface.viewers.ColumnWeightData;
@@ -274,9 +275,9 @@ public class SinkView extends ViewPart {
         public void gatherStatistics() {
             if (map.size() > 0) matches.clear(); // clear the map
             
-            for (Iterator iter = matches.iterator(); iter.hasNext();) {
+            for (Iterator<ViewMatch> iter = matches.iterator(); iter.hasNext();) {
             	
-                ViewMatch match = (ViewMatch) iter.next();
+                ViewMatch match = iter.next();
                 
                 inc("total.all");
                 
@@ -330,8 +331,8 @@ public class SinkView extends ViewPart {
             }
             
             
-            for (Iterator iter = categories.keySet().iterator(); iter.hasNext();) {
-                String category = (String) iter.next();
+            for (Iterator<String> iter = categories.keySet().iterator(); iter.hasNext();) {
+                String category = iter.next();
                 result.append(getKey(category));
             }
             
@@ -654,7 +655,7 @@ public class SinkView extends ViewPart {
                     log(e.getMessage(), e);
                     return Status.CANCEL_STATUS;
                 }
-                Collection/* <SinkDescription> */sinks = XMLConfig.readSinks("sinks.xml");
+                Collection<SinkDescription> sinks = XMLConfig.readSinks("sinks.xml");
                 //Assert.isNotNull(sinks, "Could not parse the sinks");
                 int Matches = 0, Unsafe = 0;
                 for (int i = 0; i < projects.length; i++) {
@@ -665,14 +666,14 @@ public class SinkView extends ViewPart {
                     // }
                     log("------------------ Project "+ cutto(project.getProject().getName(), 20) + "------------------ ");
                     int matches = 0, unsafe = 0;
-                    for (Iterator descIter = sinks.iterator(); descIter.hasNext();) {
-                        XMLConfig.SinkDescription desc = (SinkDescription) descIter.next();
+                    for (Iterator<SinkDescription> descIter = sinks.iterator(); descIter.hasNext();) {
+                        XMLConfig.SinkDescription desc = descIter.next();
                         Assert.isNotNull(desc);
                         log("Analyzing project " + project.getProject().getName()
                             + ": processing method " + desc.getID() + "...");
                         monitor.subTask("Project " + project.getProject().getName()
                             + ": processing method " + desc.getID() + "...");
-                        int matchesForMethod = matches;
+                        //int matchesForMethod = matches;
                         int index=desc.getMethodName().lastIndexOf('.');
                         char aux=(desc.getMethodName().charAt(index+1));
                         boolean isConstructor = aux<='Z';
@@ -1442,9 +1443,9 @@ public class SinkView extends ViewPart {
     
     public static boolean isDerivationName(String identifier) {
     	
-		Collection derivators = XMLConfig.readDerivators("derived.xml");
+		Collection<DerivationDescription> derivators = XMLConfig.readDerivators("derived.xml");
 		
-		for(Iterator iter = derivators.iterator(); iter.hasNext(); ){
+		for(Iterator<DerivationDescription> iter = derivators.iterator(); iter.hasNext(); ){
 			XMLConfig.DerivationDescription derivationDesc = (XMLConfig.DerivationDescription) iter.next();
 			int i=derivationDesc.getMethodName().lastIndexOf('.');
 			String sub=derivationDesc.getMethodName().substring(i+1);
