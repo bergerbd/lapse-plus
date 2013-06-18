@@ -719,7 +719,7 @@ public class SinkView extends ViewPart {
                                 }
                                 if (argCount > 0) {
                            
-                                    isError = !isStringContant(arg, element.getCompilationUnit(),
+                                    isError = !isStringConstant(arg, element.getCompilationUnit(),
                                         element.getResource());
                                     
                                 } else {
@@ -783,15 +783,15 @@ public class SinkView extends ViewPart {
      * This method does pattern-matching to find constant strings. If none of 
      * the patterns match, false is returned. 
      */
-    public static boolean isStringContant(Expression arg, CompilationUnit unit, IResource resource) {
+    public static boolean isStringConstant(Expression arg, CompilationUnit unit, IResource resource) {
         if (arg instanceof StringLiteral) {
             return true;
         } else if (arg instanceof InfixExpression) {
             InfixExpression infixExpr = (InfixExpression) arg;
-            if (!isStringContant(infixExpr.getLeftOperand(), unit, resource)) return false;
-            if (!isStringContant(infixExpr.getRightOperand(), unit, resource)) return false;
+            if (!isStringConstant(infixExpr.getLeftOperand(), unit, resource)) return false;
+            if (!isStringConstant(infixExpr.getRightOperand(), unit, resource)) return false;
             for (Iterator iter2 = infixExpr.extendedOperands().iterator(); iter2.hasNext();) {
-                if (!isStringContant((Expression) iter2.next(), unit, resource)) {
+                if (!isStringConstant((Expression) iter2.next(), unit, resource)) {
                     return false;
                 }
             }
@@ -809,7 +809,7 @@ public class SinkView extends ViewPart {
             } else {
                 VariableDeclarationFragment decl = (VariableDeclarationFragment) varDecl;
                 if (decl.getInitializer() != null) {
-                    return isStringContant(decl.getInitializer(), unit, resource);
+                    return isStringConstant(decl.getInitializer(), unit, resource);
                 }
             }
         } else if (arg instanceof MethodInvocation) {
