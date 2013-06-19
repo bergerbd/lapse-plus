@@ -3,11 +3,18 @@
    <description name="LapsePlus Update Site" url="http://update.security-comprehension.org/lapsePlus">
       The update site of LapsePlus.
    </description>
-   <feature url="features/LapsePlus.feature_2.8.2.jar" id="LapsePlus.feature" version="2.8.2"/>
-   <feature url="features/LapsePlus.feature_2.8.2.1.jar" id="LapsePlus.feature" version="2.8.2.1"/>
-   <category-def name="staticAnalysis" label="Static Analysis">
+   <feature url="features/LapsePlus.feature_2.8.2.jar" id="LapsePlus.feature" version="2.8.2">
+      <category name="softwareSecurity"/>
+   </feature>
+   <feature url="features/LapsePlus.feature_2.8.2.1.jar" id="LapsePlus.feature" version="2.8.2.1">
+      <category name="softwareSecurity"/>
+   </feature>
+   <feature url="features/LapsePlus.feature_2.8.2.4.jar" id="LapsePlus.feature" version="2.8.2.4">
+      <category name="softwareSecurity"/>
+   </feature>
+   <category-def name="softwareSecurity" label="Software Security">
       <description>
-         Features based on static analysis.
+         Features related to software security.
       </description>
    </category-def>
 </site>
