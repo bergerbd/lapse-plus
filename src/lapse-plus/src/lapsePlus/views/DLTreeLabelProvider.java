@@ -25,7 +25,7 @@ import org.eclipse.ui.internal.dialogs.ViewLabelProvider;
 
 public class DLTreeLabelProvider /*implements ILabelProvider*/ extends ColorDecoratingLabelProvider {
 	public DLTreeLabelProvider() {
-		super(new ViewLabelProvider(null, null), null);
+		super(new HistoryDefinitionLocationLabelProvider(), null);
 	}
 	
 	public Color getForeground(Object element) {
@@ -58,7 +58,7 @@ public class DLTreeLabelProvider /*implements ILabelProvider*/ extends ColorDeco
 		
 		return display.getSystemColor(SWT.COLOR_LIST_FOREGROUND);
 	}
-
+/*
 	public Image getImage(Object element) {
 		if(!(element instanceof HistoryDefinitionLocation)) return null;
 		HistoryDefinitionLocation hdl = (HistoryDefinitionLocation)element;
@@ -101,10 +101,11 @@ public class DLTreeLabelProvider /*implements ILabelProvider*/ extends ColorDeco
         				flags, 
 						new Point(bounds.width, bounds.height)));
 	}
+	*/
 
 	/* (non-Javadoc)
-	 * @see org.eclipse.jface.viewers.ILabelProvider#getText(java.lang.Object)
-	 */
+	 *  @see org.eclipse.jface.viewers.ILabelProvider#getText(java.lang.Object)
+	 * /
 	public String getText(Object element) {
 		HistoryDefinitionLocation curElem = (HistoryDefinitionLocation) element;
 		if (curElem == null) {
@@ -112,6 +113,7 @@ public class DLTreeLabelProvider /*implements ILabelProvider*/ extends ColorDeco
 		}
 		return curElem.toString();
 	}
+	*/
 
 	/* (non-Javadoc)
 	 * @see org.eclipse.jface.viewers.IBaseLabelProvider#addListener(org.eclipse.jface.viewers.ILabelProviderListener)

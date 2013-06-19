@@ -208,7 +208,7 @@ public class LapseView extends ViewPart{
 		
 		fContentProvider = new ProvenanceContentProvider.HierarchicalViewContentProvider();
 		fViewer.setContentProvider(fContentProvider);
-		fViewer.setLabelProvider((IBaseLabelProvider) new DLTreeLabelProvider());
+		fViewer.setLabelProvider(new DLTreeLabelProvider());
 		//viewer.setSorter(new NameSorter());
 		fViewer.setInput(getViewSite());
 		fClipboard = new Clipboard(parent.getDisplay());
