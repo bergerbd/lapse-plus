@@ -2,7 +2,7 @@
 <feature
       id="LapsePlus.feature"
       label="LapsePlus Feature"
-      version="2.8.2.4"
+      version="2.8.3.qualifier"
       provider-name="Bernhard J. Berger">
 
    <description url="http://blog.security-comprehension.org/?page_id=138">

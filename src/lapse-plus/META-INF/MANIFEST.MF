@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: LAPSE+ finds security vulnerabilities in Java EE Applications
 Bundle-SymbolicName: lapsePlus;singleton:=true
-Bundle-Version: 2.8.2
+Bundle-Version: 2.8.3.qualifier
 Bundle-Activator: lapsePlus.LapsePlugin
 Bundle-Vendor: Bernhard Berger
 Export-Package: lapsePlus,

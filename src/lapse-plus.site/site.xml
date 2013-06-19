@@ -12,6 +12,12 @@
    <feature url="features/LapsePlus.feature_2.8.2.4.jar" id="LapsePlus.feature" version="2.8.2.4">
       <category name="softwareSecurity"/>
    </feature>
+   <feature url="features/LapsePlus.feature_2.8.2.5.jar" id="LapsePlus.feature" version="2.8.2.5">
+      <category name="softwareSecurity"/>
+   </feature>
+   <feature url="features/LapsePlus.feature_2.8.3.201306191224.jar" id="LapsePlus.feature" version="2.8.3.201306191224">
+      <category name="softwareSecurity"/>
+   </feature>
    <category-def name="softwareSecurity" label="Software Security">
       <description>
          Features related to software security.
