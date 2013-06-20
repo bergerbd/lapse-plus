@@ -19,6 +19,7 @@ import lapsePlus.HistoryDefinitionLocation;
 import lapsePlus.LapsePlugin;
 import lapsePlus.NodeFinder;
 import lapsePlus.Utils;
+import lapsePlus.jdom.JDomHelper;
 import lapsePlus.views.SinkView;
 
 import org.eclipse.core.filebuffers.FileBuffers;
@@ -749,53 +750,16 @@ public class LapseView extends ViewPart{
 	    }
 	    return null;  
 	}
-
-	static VariableDeclaration name2decl(SimpleName sn, CompilationUnit cu, IResource resource){
-		DeclarationInfoManager.DeclarationInfo info = DeclarationInfoManager.retrieveDeclarationInfo(cu);
-		//System.out.println(info);
-		VariableDeclaration decl = info.getVariableDeclaration(sn);
-		if(decl == null) {
-			logError("decl == null for " + sn);	
-		}
-		return decl;
-	}
 	
 	static boolean isFinal(SimpleName sn, CompilationUnit cu, IResource resource){
 		
 		DeclarationInfoManager.DeclarationInfo info = DeclarationInfoManager.retrieveDeclarationInfo(cu);
 		return info.isFinal(sn);
 	}
-	
-	/**
-	 * Tests whether a given expression is a String contant.
-	 * */
-	public static boolean isStringContant(Expression arg, CompilationUnit cu, IResource resource) {
-		if(arg instanceof StringLiteral) {		
-			return true;
-		} else
-//		if(arg instanceof SimpleName) {
-//			// find out if the name is final...
-//		} else
-		if(arg instanceof InfixExpression) {
-			InfixExpression infixExpr = (InfixExpression) arg;
-			if(!isStringContant(infixExpr.getLeftOperand(), cu, resource)) return false; 
-			if(!isStringContant(infixExpr.getRightOperand(), cu, resource)) return false;
-						
-			for(Iterator iter2 = infixExpr.extendedOperands().iterator(); iter2.hasNext(); ) {
-				if(!isStringContant((Expression) iter2.next(), cu, resource)) {
-					return false;
-				}
-			}
-			return true;
-		} 
-		// TODO: add final/const
-		
-		return false;	
-	}
 
 	void processNodeSelection(SimpleName sn, HistoryDefinitionLocation defl, CompilationUnit cu, IResource resource, IProgressMonitor monitor){
 		//_cp.addElement("Visited node " + sn.toString());		
-		if(name2decl(sn, cu, resource) == null) {
+		if(JDomHelper.name2decl(sn, cu, resource) == null) {
 			// only deal with variables
 			logError("No definition for " + sn + " is found");
 			return;
@@ -826,7 +790,7 @@ public class LapseView extends ViewPart{
 			HistoryDefinitionLocation parent, LinkedList<MethodInvocation> stack, 
 			IProgressMonitor monitor) 
 	{		
-		VariableDeclaration decl = name2decl(name, cu, resource);
+		VariableDeclaration decl = JDomHelper.name2decl(name, cu, resource);
 //		if(TRACE) System.out.print('.');
 		if(monitor.isCanceled()) {
 			// check if the search has been cancelled 
@@ -1121,7 +1085,7 @@ public class LapseView extends ViewPart{
 	}
 		
 	private int getExpressionType(Expression expr, CompilationUnit cu, IResource resource) {
-		if(isStringContant(expr, cu, resource)) {
+		if(JDomHelper.isStringConstant(expr, cu, resource)) {
 			return HistoryDefinitionLocation.STRING_CONSTANT;
 		}else if(expr instanceof NullLiteral){
 			return HistoryDefinitionLocation.NULL;

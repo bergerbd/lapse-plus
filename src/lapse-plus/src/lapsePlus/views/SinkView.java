@@ -22,6 +22,7 @@ import lapsePlus.Utils;
 import lapsePlus.XMLConfig;
 import lapsePlus.XMLConfig.DerivationDescription;
 import lapsePlus.XMLConfig.SinkDescription;
+import lapsePlus.jdom.JDomHelper;
 import lapsePlus.views.LapseView.SlicingFromSinkJob;
 
 import org.eclipse.core.resources.IProject;
@@ -129,6 +130,7 @@ public class SinkView extends ViewPart {
         private boolean hasSource = true;
         private String category;
 
+        
         ViewMatch(String message, ASTNode ast, CompilationUnit unit, IResource resource,
             String type, IMember member, String category, boolean error, boolean hasSource) {
             this.message = message;
@@ -719,7 +721,7 @@ public class SinkView extends ViewPart {
                                 }
                                 if (argCount > 0) {
                            
-                                    isError = !isStringConstant(arg, element.getCompilationUnit(),
+                                    isError = !JDomHelper.isStringConstant(arg, element.getCompilationUnit(),
                                         element.getResource());
                                     
                                 } else {
@@ -773,57 +775,6 @@ public class SinkView extends ViewPart {
                 return Status.OK_STATUS;
             }
         }).schedule();
-    }
-
-    /**
-     * Tests whether a given expression is a String constant.
-     * 
-     * @param expr -- argument that we want to test
-     * 
-     * This method does pattern-matching to find constant strings. If none of 
-     * the patterns match, false is returned. 
-     */
-    public static boolean isStringConstant(final Expression expr, final CompilationUnit unit, final IResource resource) {
-        if (expr instanceof StringLiteral) {
-            return true;
-        } else if (expr instanceof InfixExpression) {
-            InfixExpression infixExpr = (InfixExpression) expr;
-            if (!isStringConstant(infixExpr.getLeftOperand(), unit, resource)) return false;
-            if (!isStringConstant(infixExpr.getRightOperand(), unit, resource)) return false;
-            for (Iterator iter2 = infixExpr.extendedOperands().iterator(); iter2.hasNext();) {
-                if (!isStringConstant((Expression) iter2.next(), unit, resource)) {
-                    return false;
-                }
-            }
-            return true;
-        } else if (expr instanceof SimpleName) {
-            final SimpleName name = (SimpleName) expr;
-            final VariableDeclaration varDecl = LapseView.name2decl(name, unit, resource);
-
-            if (varDecl == null) {
-            	logError("Cannot find declaration for " + name);
-            	return false;
-            } else if (varDecl instanceof SingleVariableDeclaration) {
-                SingleVariableDeclaration decl = (SingleVariableDeclaration) varDecl;
-                if (decl.getInitializer() != null && decl.getInitializer() instanceof StringLiteral) {
-                    return true;
-                }
-            } else {
-                VariableDeclarationFragment decl = (VariableDeclarationFragment) varDecl;
-                if (decl.getInitializer() != null) {
-                    return isStringConstant(decl.getInitializer(), unit, resource);
-                }
-            }
-        } else if (expr instanceof MethodInvocation) {
-            MethodInvocation inv = (MethodInvocation) expr;
-            if (inv.getName().getIdentifier().equals("toString")) {
-                // TODO: StringBuffer.toString() return result
-                Expression target = inv.getExpression();
-                // System.err.println("TODO -> methodInv: " + inv);
-            }
-        }
-        // TODO: add final/const
-        return false;       // this is a conservative return value
     }
 
     /*private Type findLocallyDeclaredType(String argName, CompilationUnit compilationUnit) {
