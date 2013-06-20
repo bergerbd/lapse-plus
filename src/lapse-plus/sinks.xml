@@ -1,6 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <sinks>
+	<!-- SQL Injections (JPA) -->
+	<sink id="javax.persistence.EntityManager.createNativeQuery(String)">
+		<paramCount>1</paramCount>
+		<vulnParam>0</vulnParam>
+		<category>SQL Injection</category>
+	</sink>
+	<sink id="javax.persistence.EntityManager.createNativeQuery(String, Class)">
+		<paramCount>2</paramCount>
+		<vulnParam>0</vulnParam>
+		<category>SQL Injection</category>
+	</sink>
+	<sink id="javax.persistence.EntityManager.createNativeQuery(String, String)">
+		<paramCount>2</paramCount>
+		<vulnParam>0</vulnParam>
+		<category>SQL Injection</category>
+	</sink>
+	<sink id="javax.persistence.EntityManager.createQuery(String)">
+		<paramCount>1</paramCount>
+		<vulnParam>0</vulnParam>
+		<category>SQL Injection</category>
+	</sink>
+	<sink id="javax.persistence.EntityManager.createQuery(String, Class)">
+		<paramCount>2</paramCount>
+		<vulnParam>0</vulnParam>
+		<category>SQL Injection</category>
+	</sink>
+	
 	<!-- SQL Injections -->
 	<sink id="java.sql.Statement.executeUpdate(String)">
 		<paramCount>1</paramCount>
