@@ -221,6 +221,7 @@
 		<vulnParam>0</vulnParam>
 		<category>Command Injection</category>
 	</sink>
+	
 	<!-- Information Leakage -->
 	<sink id="java.io.PrintStream.write(String)">
 		<paramCount>1</paramCount>
@@ -232,6 +233,8 @@
 		<vulnParam>1</vulnParam>
 		<category>Information Leakage</category>
 	</sink>
+	
+	<!-- XPath Injection -->	
 	<sink id="javax.xml.xpath.XPath.compile(String)">
 		<paramCount>1</paramCount>
 		<vulnParam>0</vulnParam>
@@ -292,7 +295,79 @@
 		<vulnParam>0</vulnParam>
 		<category>XPath Injection</category>
 	</sink>
-	
+
+	<!-- Regex Injection -->	
+	<sink id="java.lang.String.matches(String)">
+		<paramCount>1</paramCount>
+		<vulnParam>0</vulnParam>
+		<category>Regex Injection</category>
+	</sink>
+	<sink id="java.lang.String.replaceAll(String,String)">
+		<paramCount>2</paramCount>
+		<vulnParam>0</vulnParam>
+		<category>Regex Injection</category>
+	</sink>
+	<sink id="java.lang.String.replaceAll(String,String)">
+		<paramCount>2</paramCount>
+		<vulnParam>1</vulnParam>
+		<category>Regex Injection</category>
+	</sink>	
+	<sink id="java.lang.String.replaceFirst(String,String)">
+		<paramCount>2</paramCount>
+		<vulnParam>0</vulnParam>
+		<category>Regex Injection</category>
+	</sink>
+	<sink id="java.lang.String.replaceFirst(String,String)">
+		<paramCount>2</paramCount>
+		<vulnParam>1</vulnParam>
+		<category>Regex Injection</category>
+	</sink>		
+	<sink id="java.lang.String.split(String)">
+		<paramCount>1</paramCount>
+		<vulnParam>0</vulnParam>
+		<category>Regex Injection</category>
+	</sink>
+	<sink id="java.lang.String.split(String,int)">
+		<paramCount>2</paramCount>
+		<vulnParam>0</vulnParam>
+		<category>Regex Injection</category>
+	</sink>
+	<sink id="java.util.regex.Pattern.compile(String)">
+		<paramCount>1</paramCount>
+		<vulnParam>0</vulnParam>
+		<category>Regex Injection</category>
+	</sink>
+	<sink id="java.util.regex.Pattern.compile(String,int)">
+		<paramCount>2</paramCount>
+		<vulnParam>0</vulnParam>
+		<category>Regex Injection</category>
+	</sink>
+	<sink id="java.util.regex.Pattern.matches(String,CharSequence)">
+		<paramCount>2</paramCount>
+		<vulnParam>0</vulnParam>
+		<category>Regex Injection</category>
+	</sink>
+	<sink id="java.util.regex.Matcher.appendReplacement(StringBuffer,String)">
+		<paramCount>2</paramCount>
+		<vulnParam>1</vulnParam>
+		<category>Regex Injection</category>
+	</sink>
+	<sink id="java.util.regex.Matcher.replaceAll(String)">
+		<paramCount>1</paramCount>
+		<vulnParam>0</vulnParam>
+		<category>Regex Injection</category>
+	</sink>
+	<sink id="java.util.regex.Matcher.replaceFirst(String)">
+		<paramCount>1</paramCount>
+		<vulnParam>0</vulnParam>
+		<category>Regex Injection</category>
+	</sink>		
+	<sink id="javax.swing.RowFilter.regexFilter(String,int[])">
+		<paramCount>2</paramCount>
+		<vulnParam>0</vulnParam>
+		<category>Regex Injection</category>
+	</sink>
+
 	<!-- LDAP Injection -->
 	<sink id="com.novell.ldap.LDAPConnection.connect(String,int)">
 		<paramCount>2</paramCount>
