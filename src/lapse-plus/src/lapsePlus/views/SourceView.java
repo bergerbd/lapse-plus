@@ -21,6 +21,7 @@ import lapsePlus.XMLConfig;
 import lapsePlus.MethodSearchRequestor.MethodDeclarationsSearchRequestor;
 import lapsePlus.Utils.MethodDeclarationUnitPair;
 import lapsePlus.XMLConfig.SourceDescription;
+import lapsePlus.utils.StringUtils;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -52,6 +53,7 @@ import org.eclipse.jdt.internal.core.JavaModelManager;
 import org.eclipse.jdt.internal.core.JavaProject;
 import org.eclipse.jdt.internal.ui.JavaPluginImages;
 import org.eclipse.jdt.internal.ui.javaeditor.EditorUtility;
+import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuListener;
@@ -102,94 +104,7 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.texteditor.ITextEditor;
 
-public class SourceView extends ViewPart {
-	
-	
-	class ViewMatch {
-		private String message;
-		private ASTNode ast;
-		private CompilationUnit unit;
-		private IResource resource;
-		private String type;
-		private IMember member;
-		private boolean error = false;
-		
-
-		
-		private String category;
-		private boolean nonWeb;
-
-		ViewMatch(String message, ASTNode ast, CompilationUnit unit, IResource resource, String type, String category, IMember member, boolean error, boolean nonWeb){
-			this.message = message;
-			this.ast = ast;
-			this.unit = unit;
-			this.resource = resource;
-			this.type = type;
-			this.category = category;
-			this.member = member;
-			this.error = error;
-			this.nonWeb = nonWeb;
-		}
-		
-		public String toString() {
-			return message;
-		}
-		
-		public String getMessage() {
-			return message;
-		}		
-		public String getType() {
-			return type;
-		}
-		public CompilationUnit getUnit() {
-			return unit;
-		}
-		public IResource getResource() {
-			return resource;
-		}
-		public ASTNode getAST() {
-			return ast;
-		}
-		public String getCategory() {
-			return this.category;
-		}
-		public IMember getMember() {
-			return member;
-		}
-		public boolean isSource() {
-			return unit != null;	
-		}
-		public int getLineNumber() {
-			return isSource() ?
-					unit.getLineNumber(ast.getStartPosition()) :
-					-1; 
-		}
-		public String getFullFileName() {
-			return resource.getFullPath().toString();
-		}
-		public String getFileName() {
-			return resource.getName();
-		}
-		public IProject getProject() {
-			return resource.getProject();
-		}
-		public boolean isError() {
-			return error;
-		}
-
-		public String toLongString() {
-			return 
-				cutto(this.getAST().toString(), 65) + "\t" +
-				cutto(this.getType(), 20) + "\t" +
-				cutto(this.getProject().getProject().getName(), 12) + "\t" +
-				this.getResource().getFullPath().toString() + ":" +
-				this.getLineNumber();
-		}
-
-		public boolean isNonWeb() {
-			return this.nonWeb;
-		}
-	}
+public class SourceView extends ViewPart {	
 	
 	static TableViewer viewer;
 	ViewContentProvider contentProvider;
@@ -208,9 +123,9 @@ public class SourceView extends ViewPart {
 	
 	class ViewContentProvider implements IStructuredContentProvider {
 		
-		Vector<ViewMatch> matches = new Vector<ViewMatch>();
+		Vector<SourceMatch> matches = new Vector<SourceMatch>();
 		
-		public void addMatch(ViewMatch match) {
+		public void addMatch(SourceMatch match) {
 			matches.add(match);
 		}
 		
@@ -233,11 +148,15 @@ public class SourceView extends ViewPart {
 		}
 	}
 	
+	/*
+	 * TODO Perhaps we can reuse org.eclipse.jdt.ui.JavaElementLabelProvider to fetch the images
+
+	 */
 	class ViewLabelProvider extends LabelProvider implements ITableLabelProvider, IColorProvider {
 		
 		public String getColumnText(Object obj, int index) {
 			
-			ViewMatch match = (ViewMatch) obj;
+			SourceMatch match = (SourceMatch) obj;
 			
 			if(index == 0) {
 				return match.getMessage();
@@ -265,7 +184,7 @@ public class SourceView extends ViewPart {
 		}
 		
 		public Image getColumnImage(Object obj, int index) {
-			ViewMatch match = (ViewMatch) obj;
+			SourceMatch match = (SourceMatch) obj;
 			
 			if(index == 0) {
 				return match.isError() ?
@@ -277,7 +196,7 @@ public class SourceView extends ViewPart {
 		
 		public Color getForeground(Object element) {
 			Display display = Display.getCurrent();
-			ViewMatch match = (ViewMatch) element;
+			SourceMatch match = (SourceMatch) element;
 			
 			return match.isSource() ?
 					display.getSystemColor(SWT.COLOR_LIST_FOREGROUND) :
@@ -306,7 +225,7 @@ public class SourceView extends ViewPart {
 		}
 		
 		public int category(Object element) {
-			ViewMatch match  = (ViewMatch) element;
+			SourceMatch match  = (SourceMatch) element;
 			if(match.isError()) {
 				return 1; 
 			} else {
@@ -315,8 +234,8 @@ public class SourceView extends ViewPart {
 		}
 		
 		public int compare(Viewer viewer, Object e1, Object e2) {
-			ViewMatch match1 = (ViewMatch)e1;
-			ViewMatch match2 = (ViewMatch)e2;
+			SourceMatch match1 = (SourceMatch)e1;
+			SourceMatch match2 = (SourceMatch)e2;
 			int result = Integer.MAX_VALUE; 
 			String s1, s2;
 		
@@ -479,7 +398,7 @@ public class SourceView extends ViewPart {
 				
 				log(
 						"------------------ Project " + 
-						cutto(project.getProject().getName(), 20) + 
+						StringUtils.cutto(project.getProject().getName(), 20) + 
 						"------------------ ");
 				
 //				if(!project.isOpen()) {
@@ -533,7 +452,7 @@ public class SourceView extends ViewPart {
 						}
 						MethodInvocation mi = (MethodInvocation) expr;
 	
-						ViewMatch match = new ViewMatch(
+						SourceMatch match = new SourceMatch(
 								expr.toString(), 
 								expr, 
 								element.getCompilationUnit(), 
@@ -606,7 +525,7 @@ public class SourceView extends ViewPart {
 			Collection pairs =  requestor.getMethodUnitPairs();
 			for(Iterator iter = pairs.iterator(); iter.hasNext();) {
 				Utils.MethodDeclarationUnitPair pair = (MethodDeclarationUnitPair) iter.next();
-				ViewMatch match = new ViewMatch(
+				SourceMatch match = new SourceMatch(
 						pair.getMember().getDeclaringType().getElementName() + "." + pair.getMember().getElementName(),  
 						pair.getMethod() != null ? pair.getMethod().getName() : null, 
 						pair.getCompilationUnit(), 
@@ -671,7 +590,7 @@ public class SourceView extends ViewPart {
 		doubleClickAction = new Action() {
 			public void run() {
 				IStructuredSelection sel = (IStructuredSelection) viewer.getSelection();
-				ViewMatch match = (ViewMatch) sel.getFirstElement();
+				SourceMatch match = (SourceMatch) sel.getFirstElement();
 				
 				try {
 //					System.out.println("Double-clicked on " + match.getMember().getClass());
@@ -701,7 +620,7 @@ public class SourceView extends ViewPart {
 			
 			ViewerFilter filter = new ViewerFilter() {
 				public boolean select(Viewer viewer, Object parentElement, Object element) {
-					ViewMatch match = (ViewMatch) element;
+					SourceMatch match = (SourceMatch) element;
 					
 					return !match.isNonWeb();
 				}	
@@ -724,7 +643,7 @@ public class SourceView extends ViewPart {
 			boolean hasFilter = false;
 			ViewerFilter filter = new ViewerFilter() {
 				public boolean select(Viewer viewer, Object parentElement, Object element) {
-					ViewMatch match = (ViewMatch) element;
+					SourceMatch match = (SourceMatch) element;
 					
 					return match.isSource();
 				}									
@@ -833,23 +752,6 @@ public class SourceView extends ViewPart {
 	    }
 	}
 	
-	private static String cutto(String str, int to) {
-		if(str.length() < to-3) {
-			return str + repeat(" ", to - str.length());
-		} else {
-			return str.substring(0, to-3) + "...";
-		}
-	}
-	
-	private static String repeat(String str, int times) {
-		StringBuffer buf = new StringBuffer(); 
-		for (int i = 0; i < times; i++) {
-			buf.append(str);
-		}
-		
-		return buf.toString();
-	}
-	
 	class CopyMatchViewAction extends Action {
 	    //private static final char INDENTATION= '\t';  //$NON-NLS-1$
 	    
@@ -887,7 +789,7 @@ public class SourceView extends ViewPart {
 		private void addCalls(TableItem[] items, StringBuffer buf) {
 			for (int i = 0; i < items.length; i++) {
 				TableItem item = items[i];
-				SourceView.ViewMatch match = (SourceView.ViewMatch) item.getData();
+				SourceMatch match = (SourceMatch) item.getData();
 				
 				buf.append(match.toLongString());
 		        buf.append('\n');			

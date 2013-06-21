@@ -23,6 +23,7 @@ import lapsePlus.XMLConfig;
 import lapsePlus.XMLConfig.DerivationDescription;
 import lapsePlus.XMLConfig.SinkDescription;
 import lapsePlus.jdom.JDomHelper;
+import lapsePlus.utils.StringUtils;
 import lapsePlus.views.LapseView.SlicingFromSinkJob;
 
 import org.eclipse.core.resources.IProject;
@@ -114,135 +115,6 @@ public class SinkView extends ViewPart {
     private static final int FILE_FIELD = 4;
     private static final int LINE_FIELD = 5;
     
-    /**
-     * This corresponds to a particular match.
-     */
-    class ViewMatch {
-        private String message;
-        private ASTNode ast;
-        private CompilationUnit unit;
-        private IResource resource;
-        private String type;
-        private IMember member;
-        private boolean error = false;
-        private boolean done = false;
-        private boolean safe = false;
-        private boolean hasSource = true;
-        private String category;
-
-        
-        ViewMatch(String message, ASTNode ast, CompilationUnit unit, IResource resource,
-            String type, IMember member, String category, boolean error, boolean hasSource) {
-            this.message = message;
-            this.ast = ast;
-            this.unit = unit;
-            this.resource = resource;
-            this.type = type;
-            this.member = member;
-            this.category = category;
-            this.error = error;
-            this.hasSource = hasSource;
-        }
-
-        public String toString() {
-            return message;
-        }
-
-        public String getMessage() {
-            return message;
-        }
-
-        public String getType() {
-            return type;
-        }
-
-        public CompilationUnit getUnit() {
-            return unit;
-        }
-
-        public IResource getResource() {
-            return resource;
-        }
-
-        public ASTNode getAST() {
-            return ast;
-        }
-
-        public IMember getMember() {
-            return member;
-        }
-
-        public String getCategory() {
-            return category;
-        }
-
-        public boolean isSource() {
-            return unit != null;
-        }
-
-        public int getLineNumber() {
-            return isSource() ? unit.getLineNumber(ast.getStartPosition()) : -1;
-        }
-
-        public String getFullFileName() {
-            return resource.getFullPath().toString();
-        }
-
-        public String getFileName() {
-            return resource.getName();
-        }
-
-        public IProject getProject() {
-            return resource.getProject();
-        }
-
-        public boolean isError() {
-            return error;
-        }
-
-        public boolean hasSource() {
-            return hasSource;
-        }
-
-        public String toLongString() {
-            return getStatusSymbol() + " " + cutto(this.getAST().toString(), 65) + "\t"
-                + cutto(this.getType(), 40) + "\t"
-                + cutto(this.getProject().getProject().getName(), 20) + "\t"
-                + this.getResource().getFullPath().toString() + ":" + this.getLineNumber();
-        }
-
-        private String getStatusSymbol() {
-            if (!isError()) {
-                return "SAFE   ";
-            } else if (isSafe()) {
-                return "M-SAFE ";
-            } else if (isDone()) {
-                return "M-ERROR";
-            } else {
-                return "UNKNOWN";
-            }
-        }
-
-        public void setDone(boolean b) {
-            this.done = b;
-        }
-
-        public boolean isDone() {
-            return this.done;
-        }
-
-        public boolean isSafe() {
-            return this.safe;
-        }
-
-        public void setSafe(boolean b) {
-            this.safe = b;
-        }
-
-        public boolean getSafe() {
-            return this.safe;
-        }
-    }
     static TableViewer viewer;
     private Action 
         runAction, 
@@ -266,20 +138,20 @@ public class SinkView extends ViewPart {
     
     class StatisticsManager {
     	
-        private Collection<ViewMatch> matches = new LinkedList<ViewMatch>();
+        private Collection<SinkMatch> matches = new LinkedList<SinkMatch>();
         HashMap<String, Integer> map = new HashMap<String, Integer>();
         private HashMap<String, Boolean> categories = new HashMap<String, Boolean>();
 
-        public void add(ViewMatch match) {
+        public void add(SinkMatch match) {
             matches.add(match);
         }
 
         public void gatherStatistics() {
             if (map.size() > 0) matches.clear(); // clear the map
             
-            for (Iterator<ViewMatch> iter = matches.iterator(); iter.hasNext();) {
+            for (Iterator<SinkMatch> iter = matches.iterator(); iter.hasNext();) {
             	
-                ViewMatch match = iter.next();
+                SinkMatch match = iter.next();
                 
                 inc("total.all");
                 
@@ -291,7 +163,7 @@ public class SinkView extends ViewPart {
                 
                 if (match.isError()) inc("unsafe." + match.getCategory());
                 
-                if (match.isError() && match.hasSource) inc("source+unsafe." + match.getCategory());
+                if (match.isError() && match.hasSource()) inc("source+unsafe." + match.getCategory());
                 
                 categories.put(match.getCategory(), null);
                 
@@ -393,7 +265,7 @@ public class SinkView extends ViewPart {
         		unsafe=0;
         	}
         	
-            return ("\t" + cutto(key, 20) + "\tTotal:\t" + total + ",\tunsafe:\t"
+            return ("\t" + StringUtils.cutto(key, 20) + "\tTotal:\t" + total + ",\tunsafe:\t"
                 + unsafe + ",\tin source:\t" + source + "\n");
         }
 
@@ -426,9 +298,9 @@ public class SinkView extends ViewPart {
         }
     }
     class ViewContentProvider implements IStructuredContentProvider {
-        Vector<ViewMatch> matches = new Vector<ViewMatch>();
+        Vector<SinkMatch> matches = new Vector<SinkMatch>();
 
-        public void addMatch(ViewMatch match) {
+        public void addMatch(SinkMatch match) {
             matches.add(match);
             statisticsManager.add(match);
             // TODO: handle markers
@@ -482,7 +354,7 @@ public class SinkView extends ViewPart {
         }
 
         public String getColumnText(Object obj, int index) {
-            ViewMatch match = (ViewMatch) obj;
+            SinkMatch match = (SinkMatch) obj;
             String result = null;
             if (index == MESSAGE_FIELD) {
                 result = match.getMessage();
@@ -505,7 +377,7 @@ public class SinkView extends ViewPart {
         }
 
         public Image getColumnImage(Object obj, int index) {
-            ViewMatch match = (ViewMatch) obj;
+            SinkMatch match = (SinkMatch) obj;
             if (index == 0) {
                 return match.isError()
                     ? JavaPluginImages.get(JavaPluginImages.IMG_OBJS_ERROR)
@@ -516,7 +388,7 @@ public class SinkView extends ViewPart {
 
         public Color getForeground(Object element) {
             Display display = Display.getCurrent();
-            ViewMatch match = (ViewMatch) element;
+            SinkMatch match = (SinkMatch) element;
             if (match.isSource() && !match.isSafe()) {
                 return display.getSystemColor(SWT.COLOR_LIST_FOREGROUND);
             } else {
@@ -529,7 +401,7 @@ public class SinkView extends ViewPart {
         }
 
         public Font getFont(Object element) {
-            ViewMatch match = (ViewMatch) element;
+            SinkMatch match = (SinkMatch) element;
             if (match.isDone()) {
                 return fBold;
             }
@@ -569,7 +441,7 @@ public class SinkView extends ViewPart {
                         int done = 0, safe = 0;
                         Object[] selected = sel.toArray();
                         for (int i = 0; i < selected.length; i++) {
-                            ViewMatch vm = (ViewMatch) selected[i];
+                            SinkMatch vm = (SinkMatch) selected[i];
                             if (vm.isDone()) done++;
                             if (vm.isSafe()) safe++;
                         }
@@ -612,7 +484,7 @@ public class SinkView extends ViewPart {
 
     private void fillContextMenu(IMenuManager manager) {
         
-        ViewMatch match = (ViewMatch) ((IStructuredSelection) viewer.getSelection())
+        SinkMatch match = (SinkMatch) ((IStructuredSelection) viewer.getSelection())
             .getFirstElement();
         if (match != null && match.isError()) {
             manager.add(doBackwardPropagationAction);
@@ -666,7 +538,7 @@ public class SinkView extends ViewPart {
                     // System.out.println("Skipping " + project);
                     // continue;
                     // }
-                    log("------------------ Project "+ cutto(project.getProject().getName(), 20) + "------------------ ");
+                    log("------------------ Project "+ StringUtils.cutto(project.getProject().getName(), 20) + "------------------ ");
                     int matches = 0, unsafe = 0;
                     for (Iterator<SinkDescription> descIter = sinks.iterator(); descIter.hasNext();) {
                         XMLConfig.SinkDescription desc = descIter.next();
@@ -734,7 +606,7 @@ public class SinkView extends ViewPart {
                                 message = element.getMember().getElementName();
                                 hasSource = false;
                             }
-                            ViewMatch match = new ViewMatch(message, expr, element
+                            SinkMatch match = new SinkMatch(message, expr, element
                                 .getCompilationUnit(), element.getResource(), desc.getID(), element
                                 .getMember(), desc.getCategoryName(), isError, hasSource);
                             cp.addMatch(match);
@@ -755,7 +627,7 @@ public class SinkView extends ViewPart {
                             });
                         }
                     }
-                    log(cutto(project.getProject().getName(), 20) + "\t:\t"
+                    log(StringUtils.cutto(project.getProject().getName(), 20) + "\t:\t"
                         + matches + "\ttotal sink(s),\t" + unsafe + "\tunsafe sink(s)");
                     Unsafe += unsafe;
                     Matches += matches;
@@ -769,7 +641,7 @@ public class SinkView extends ViewPart {
                     "There is a mismatch between the number of metches in the view (" + 
                     cp.getMatchCount() + ") and the total number of matches (" + 
                     Matches + ")" );
-                log("\n" + cutto("All projects", 20) + "\t:\t" + Matches
+                log("\n" + StringUtils.cutto("All projects", 20) + "\t:\t" + Matches
                     + "\ttotal sink(s),\t" + Unsafe + "\tunsafe sink(s)");
                 //statisticsManager.printStatistics();
                 return Status.OK_STATUS;
@@ -817,7 +689,7 @@ public class SinkView extends ViewPart {
             public void run() {
                 Object[] matches = ((IStructuredSelection) viewer.getSelection()).toArray();
                 for (int i = 0; i < matches.length; i++) {
-                    ViewMatch match = (ViewMatch) matches[i];
+                    SinkMatch match = (SinkMatch) matches[i];
                     if (match != null) {
                         // toggle the safe status
                         match.setSafe(!match.getSafe());
@@ -835,7 +707,7 @@ public class SinkView extends ViewPart {
             public void run() {
                 LapseView lapseView = LapsePlugin.getDefault().getLapseView();
                 if (lapseView != null) {
-                    ViewMatch match = ((ViewMatch) ((IStructuredSelection) viewer.getSelection()).getFirstElement());
+                    SinkMatch match = ((SinkMatch) ((IStructuredSelection) viewer.getSelection()).getFirstElement());
                     ASTNode astNode = match.getAST();
                     SlicingFromSinkJob job = lapseView.getSinkSlicingJob();
                     if(job != null) {
@@ -887,7 +759,7 @@ public class SinkView extends ViewPart {
         doubleClickAction = new Action() {
             public void run() {
                 IStructuredSelection sel = (IStructuredSelection) viewer.getSelection();
-                ViewMatch match = (ViewMatch) sel.getFirstElement();
+                SinkMatch match = (SinkMatch) sel.getFirstElement();
                 try {
                     // System.out.println("Double-clicked on " +
                     // match.getMember().getClass());
@@ -909,7 +781,7 @@ public class SinkView extends ViewPart {
                 boolean hasFilter = false;
                 ViewerFilter filter = new ViewerFilter() {
                     public boolean select(Viewer viewer, Object parentElement, Object element) {
-                        ViewMatch match = (ViewMatch) element;
+                        SinkMatch match = (SinkMatch) element;
                         return match.isError();
                     }
                 };
@@ -930,7 +802,7 @@ public class SinkView extends ViewPart {
                 boolean hasFilter = false;
                 ViewerFilter filter = new ViewerFilter() {
                     public boolean select(Viewer viewer, Object parentElement, Object element) {
-                        ViewMatch match = (ViewMatch) element;
+                        SinkMatch match = (SinkMatch) element;
                         return match.isSource();
                     }
                 };
@@ -952,7 +824,7 @@ public class SinkView extends ViewPart {
                 boolean hasFilter = false;
                 ViewerFilter filter = new ViewerFilter() {
                     public boolean select(Viewer viewer, Object parentElement, Object element) {
-                        ViewMatch match = (ViewMatch) element;
+                        SinkMatch match = (SinkMatch) element;
                         return match.getCategory().equalsIgnoreCase("SQL Injection");
                     }
                 };
@@ -974,7 +846,7 @@ public class SinkView extends ViewPart {
                 boolean hasFilter = false;
                 ViewerFilter filter = new ViewerFilter() {
                     public boolean select(Viewer viewer, Object parentElement, Object element) {
-                        ViewMatch match = (ViewMatch) element;
+                        SinkMatch match = (SinkMatch) element;
                         return match.getCategory().equalsIgnoreCase("Cross-site Scripting");
                     }
                 };
@@ -996,7 +868,7 @@ public class SinkView extends ViewPart {
                 boolean hasFilter = false;
                 ViewerFilter filter = new ViewerFilter() {
                     public boolean select(Viewer viewer, Object parentElement, Object element) {
-                        ViewMatch match = (ViewMatch) element;
+                        SinkMatch match = (SinkMatch) element;
                         return match.getCategory().equalsIgnoreCase("Path Traversal");
                     }
                 };
@@ -1019,7 +891,7 @@ public class SinkView extends ViewPart {
                 boolean hasFilter = false;
                 ViewerFilter filter = new ViewerFilter() {
                     public boolean select(Viewer viewer, Object parentElement, Object element) {
-                        ViewMatch match = (ViewMatch) element;
+                        SinkMatch match = (SinkMatch) element;
                         return match.getCategory().equalsIgnoreCase("HTTP Response Splitting");
                     }
                 };
@@ -1042,7 +914,7 @@ public class SinkView extends ViewPart {
                 boolean hasFilter = false;
                 ViewerFilter filter = new ViewerFilter() {
                     public boolean select(Viewer viewer, Object parentElement, Object element) {
-                        ViewMatch match = (ViewMatch) element;
+                        SinkMatch match = (SinkMatch) element;
                         return match.getCategory().equalsIgnoreCase("Command Injection");
                     }
                 };
@@ -1065,7 +937,7 @@ public class SinkView extends ViewPart {
                 boolean hasFilter = false;
                 ViewerFilter filter = new ViewerFilter() {
                     public boolean select(Viewer viewer, Object parentElement, Object element) {
-                        ViewMatch match = (ViewMatch) element;
+                        SinkMatch match = (SinkMatch) element;
                         return match.getCategory().equalsIgnoreCase("LDAP Injection");
                     }
                 };
@@ -1088,7 +960,7 @@ public class SinkView extends ViewPart {
                 boolean hasFilter = false;
                 ViewerFilter filter = new ViewerFilter() {
                     public boolean select(Viewer viewer, Object parentElement, Object element) {
-                        ViewMatch match = (ViewMatch) element;
+                        SinkMatch match = (SinkMatch) element;
                         return match.getCategory().equalsIgnoreCase("XPath Injection");
                     }
                 };
@@ -1112,7 +984,7 @@ public class SinkView extends ViewPart {
                 boolean hasFilter = false;
                 ViewerFilter filter = new ViewerFilter() {
                     public boolean select(Viewer viewer, Object parentElement, Object element) {
-                        ViewMatch match = (ViewMatch) element;
+                        SinkMatch match = (SinkMatch) element;
                         return match.isSource();
                     }
                 };
@@ -1240,21 +1112,6 @@ public class SinkView extends ViewPart {
         }
     }
 
-    private static String cutto(String str, int to) {
-        if (str.length() < to - 3) {
-            return str + repeat(" ", to - str.length());
-        } else {
-            return str.substring(0, to - 3) + "...";
-        }
-    }
-
-    private static String repeat(String str, int times) {
-        StringBuffer buf = new StringBuffer();
-        for (int i = 0; i < times; i++) {
-            buf.append(str);
-        }
-        return buf.toString();
-    }
     class CopyMatchViewAction extends Action {
         // private static final char INDENTATION = '\t'; //$NON-NLS-1$
         private SinkView fView;
@@ -1288,7 +1145,7 @@ public class SinkView extends ViewPart {
         private void addCalls(TableItem[] items, StringBuffer buf) {
             for (int i = 0; i < items.length; i++) {
                 TableItem item = items[i];
-                SinkView.ViewMatch match = (SinkView.ViewMatch) item.getData();
+                SinkMatch match = (SinkMatch) item.getData();
                 buf.append(match.toLongString());
                 buf.append('\n');
             }
@@ -1325,7 +1182,7 @@ public class SinkView extends ViewPart {
         }
 
         public int category(Object element) {
-            SinkView.ViewMatch match = (SinkView.ViewMatch) element;
+            SinkMatch match = (SinkMatch) element;
             if (match.isSource()) {
                 return 1;
             } else {
@@ -1334,8 +1191,8 @@ public class SinkView extends ViewPart {
         }
 
         public int compare(Viewer viewer, Object e1, Object e2) {
-            SinkView.ViewMatch match1 = (SinkView.ViewMatch) e1;
-            SinkView.ViewMatch match2 = (SinkView.ViewMatch) e2;
+            SinkMatch match1 = (SinkMatch) e1;
+            SinkMatch match2 = (SinkMatch) e2;
             int result = Integer.MAX_VALUE;
             String s1, s2;
             if (columnNum == MESSAGE_FIELD) {
