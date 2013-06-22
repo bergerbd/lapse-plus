@@ -11,44 +11,18 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.text.Collator;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.Locale;
 import java.util.Vector;
-import lapsePlus.CallerFinder;
 import lapsePlus.LapsePlugin;
-import lapsePlus.Utils;
 import lapsePlus.XMLConfig;
 import lapsePlus.XMLConfig.DerivationDescription;
-import lapsePlus.XMLConfig.SinkDescription;
-import lapsePlus.jdom.JDomHelper;
-import lapsePlus.utils.StringUtils;
 import lapsePlus.views.LapseView.SlicingFromSinkJob;
 
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.Assert;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jdt.core.IJavaModel;
-import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jdt.core.IMember;
-import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ClassInstanceCreation;
-import org.eclipse.jdt.core.dom.CompilationUnit;
-import org.eclipse.jdt.core.dom.Expression;
-import org.eclipse.jdt.core.dom.InfixExpression;
 import org.eclipse.jdt.core.dom.MethodInvocation;
-import org.eclipse.jdt.core.dom.SimpleName;
-import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
-import org.eclipse.jdt.core.dom.StringLiteral;
-import org.eclipse.jdt.core.dom.VariableDeclaration;
-import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
-import org.eclipse.jdt.internal.core.JavaModelManager;
 import org.eclipse.jdt.internal.ui.JavaPluginImages;
 import org.eclipse.jdt.internal.ui.javaeditor.EditorUtility;
 import org.eclipse.jface.action.Action;
@@ -116,8 +90,7 @@ public class SinkView extends ViewPart {
     private static final int LINE_FIELD = 5;
     
     static TableViewer viewer;
-    private Action 
-        runAction, 
+    private Action runAction, 
         doubleClickAction, 
         doBackwardPropagationAction, 
         hideSafeAction;
@@ -136,168 +109,13 @@ public class SinkView extends ViewPart {
     private Clipboard fClipboard;
     private StatisticsManager statisticsManager = new StatisticsManager();
     
-    class StatisticsManager {
-    	
-        private Collection<SinkMatch> matches = new LinkedList<SinkMatch>();
-        HashMap<String, Integer> map = new HashMap<String, Integer>();
-        private HashMap<String, Boolean> categories = new HashMap<String, Boolean>();
+	static class ViewContentProvider implements IStructuredContentProvider {
+		private StatisticsManager statisticsManager;
 
-        public void add(SinkMatch match) {
-            matches.add(match);
-        }
-
-        public void gatherStatistics() {
-            if (map.size() > 0) matches.clear(); // clear the map
-            
-            for (Iterator<SinkMatch> iter = matches.iterator(); iter.hasNext();) {
-            	
-                SinkMatch match = iter.next();
-                
-                inc("total.all");
-                
-                if (match.isError()) inc("unsafe.all");
-                
-                if (match.hasSource() && match.isError()) inc("source+unsafe.all");
-                
-                inc("total." + match.getCategory());
-                
-                if (match.isError()) inc("unsafe." + match.getCategory());
-                
-                if (match.isError() && match.hasSource()) inc("source+unsafe." + match.getCategory());
-                
-                categories.put(match.getCategory(), null);
-                
-                if (match.hasSource()) inc("source.all");
-            }
-        }
-
-        public void printStatistics() {
-            System.out.println(getStatistics());
-        }
-
-        public String getStatistics() {
-            if (map.size() == 0) gatherStatistics();
-            StringBuffer result = new StringBuffer();
-            result.append("Statistics block:\n");
-            result.append(getKey("all"));
-            
-            int totalAll=0;
-            int sourceAll=0;
-            int unsafeAll=0;
-            int sourceUnsafeAll=0;
-            
-            if(totalAll==-1){
-            	
-            	totalAll=0;
-            }
-            
-            if(sourceAll==-1){
-            	sourceAll=0;
-            }
-            
-            if(unsafeAll==-1){
-            	unsafeAll=0;
-            }
-            
-            if(sourceUnsafeAll==-1){
-            	
-            	sourceUnsafeAll=0;
-            }
-            
-            
-            for (Iterator<String> iter = categories.keySet().iterator(); iter.hasNext();) {
-                String category = iter.next();
-                result.append(getKey(category));
-            }
-            
-            totalAll=get("total.all");
-            sourceAll=get("source.all");
-            unsafeAll=get("unsafe.all");
-            sourceUnsafeAll=get("source+unsafe.all");
-            
-            if(totalAll==-1){
-            	
-            	totalAll=0;
-            }
-            
-            if(sourceAll==-1){
-            	sourceAll=0;
-            }
-            
-            if(unsafeAll==-1){
-            	unsafeAll=0;
-            }
-            
-            if(sourceUnsafeAll==-1){
-            	
-            	sourceUnsafeAll=0;
-            }
-            
-            
-            result.append("Out of " + totalAll + " sinks, " + sourceAll
-                + " occur in the source.\n");
-            
-            
-            result.append("Out of " + unsafeAll + " unsafe sinks, "
-                + sourceUnsafeAll + " occur in the source.\n");
-            
-            
-            
-            return result.toString();
-        }
-
-        private String getKey(String key) {
-        	
-        	int total=get("total." + key);
-        	int source=get("source+unsafe." + key);
-        	int unsafe=get("unsafe." + key);
-        	
-        	if(total==-1){
-        		
-        		total=0;
-        	}
-        	
-        	if(source==-1){
-        		source=0;
-        	}
-        	
-        	if(unsafe==-1){
-        		unsafe=0;
-        	}
-        	
-            return ("\t" + StringUtils.cutto(key, 20) + "\tTotal:\t" + total + ",\tunsafe:\t"
-                + unsafe + ",\tin source:\t" + source + "\n");
-        }
-
-        private void inc(String key) {
-            if (map.get(key) == null) {
-                map.put(key, new Integer(1));
-            } else {
-                Integer oldValue = (Integer) map.get(key);
-                map.put(key, new Integer(oldValue.intValue() + 1));
-            }
-        }
-
-        private int get(String key) {
-            Integer i = ((Integer) map.get(key));
-            if (i != null) {
-                return i.intValue();
-            } else {
-                logError("Key '" + key + "' is missing.");
-                return -1;
-            }
-        }
-
-        /**
-         * Clears all internal data structures.
-         */
-        public void clearMatches() {
-            matches.clear();
-            map.clear();
-            categories.clear();
-        }
-    }
-    class ViewContentProvider implements IStructuredContentProvider {
+		ViewContentProvider(final StatisticsManager statisticsManager) {
+			this.statisticsManager = statisticsManager;
+		}
+		
         Vector<SinkMatch> matches = new Vector<SinkMatch>();
 
         public void addMatch(SinkMatch match) {
@@ -317,6 +135,10 @@ public class SinkView extends ViewPart {
              * IMarker.SEVERITY_ERROR : IMarker.SEVERITY_WARNING); } catch
              * (CoreException e) { e.printStackTrace(); }
              */
+        }
+        
+        public StatisticsManager getStatisticsManager() {
+        	return statisticsManager;
         }
 
         public void inputChanged(Viewer v, Object oldInput, Object newInput) {
@@ -421,7 +243,7 @@ public class SinkView extends ViewPart {
         // viewer = new TableViewer(parent, SWT.MULTI | SWT.H_SCROLL |
         // SWT.V_SCROLL);
         viewer = new LocationViewer(parent);
-        viewer.setContentProvider(new ViewContentProvider());
+        viewer.setContentProvider(new ViewContentProvider(statisticsManager));
         viewer.setLabelProvider(new ViewLabelProvider());
         viewer.setSorter(new ColumnBasedSorter(2));
         viewer.setInput(getViewSite());
@@ -507,146 +329,7 @@ public class SinkView extends ViewPart {
     }
 
     private void computeSinks() {
-        (new Job("Computing Sinks") {
-        	
-            protected IStatus run(final IProgressMonitor monitor) {
-                final ViewContentProvider cp = ((ViewContentProvider) viewer.getContentProvider());
-                cp.clearMatches();
-                Display.getDefault().syncExec(new Runnable() {
-                    public void run() {
-                        if (cp.getMatchCount() > 0) {
-                            monitor.subTask("Clearing the results");
-                            viewer.refresh();
-                        }
-                    }
-                });
-                statisticsManager.clearMatches();
-                IJavaModel model = JavaModelManager.getJavaModelManager().getJavaModel();
-                IJavaProject[] projects;
-                try {
-                    projects = model.getJavaProjects();
-                } catch (JavaModelException e) {
-                    log(e.getMessage(), e);
-                    return Status.CANCEL_STATUS;
-                }
-                Collection<SinkDescription> sinks = XMLConfig.readSinks("sinks.xml");
-                //Assert.isNotNull(sinks, "Could not parse the sinks");
-                int Matches = 0, Unsafe = 0;
-                for (int i = 0; i < projects.length; i++) {
-                    IJavaProject project = (IJavaProject) projects[i];
-                    // if(!project.isOpen()) {
-                    // System.out.println("Skipping " + project);
-                    // continue;
-                    // }
-                    log("------------------ Project "+ StringUtils.cutto(project.getProject().getName(), 20) + "------------------ ");
-                    int matches = 0, unsafe = 0;
-                    for (Iterator<SinkDescription> descIter = sinks.iterator(); descIter.hasNext();) {
-                        XMLConfig.SinkDescription desc = descIter.next();
-                        Assert.isNotNull(desc);
-                        log("Analyzing project " + project.getProject().getName()
-                            + ": processing method " + desc.getID() + "...");
-                        monitor.subTask("Project " + project.getProject().getName()
-                            + ": processing method " + desc.getID() + "...");
-                        //int matchesForMethod = matches;
-                        int index=desc.getMethodName().lastIndexOf('.');
-                        char aux=(desc.getMethodName().charAt(index+1));
-                        boolean isConstructor = aux<='Z';
-                     
-                        Collection callers/* <MethodUnitPair> */= CallerFinder.findCallers(
-                            monitor, desc.getID(), project, isConstructor);
-                     
-                        for (Iterator iter = callers.iterator(); iter.hasNext();) {
-                        	
-                            Utils.ExprUnitResourceMember element = (Utils.ExprUnitResourceMember) iter
-                                .next();
-                            Expression expr = element.getExpression();
-                           
-                           
-                            // do a case on the expression:
-                            String message = null;
-                            boolean isError = true;
-                            boolean hasSource = true;
-                            if (expr != null) {
-                                message = expr.toString();
-                               
-                                int argCount = 0;
-                                Expression arg = null;
-                                int argumentNumber = desc.getVulnerableParameter();
-                                if (expr instanceof MethodInvocation) {
-                                    MethodInvocation mi = (MethodInvocation) expr;
-                                    argCount = mi.arguments().size();
-                                    if (argCount > 0) {
-                                        arg = (Expression) mi.arguments().get(argumentNumber);
-                                    }
-                                    
-                                } else if (expr instanceof ClassInstanceCreation) {
-                                    ClassInstanceCreation ci = (ClassInstanceCreation) expr;
-                                    argCount = ci.arguments().size();
-                                    if (argCount > 0) {
-                                        arg = (Expression) ci.arguments().get(argumentNumber);
-                                    }
-                                   
-                                } else {
-                                    logError("Can't match " + expr + " of type " + expr.getClass());
-                                  
-                                    continue;
-                                }
-                                if (argCount > 0) {
-                           
-                                    isError = !JDomHelper.isStringConstant(arg, element.getCompilationUnit(),
-                                        element.getResource());
-                                    
-                                } else {
-                                    // no parameter to speak of... // TODO: this
-                                    // is genrally odd
-                                    isError = false;
-                                }
-                                hasSource = true;
-                            } else {
-                                message = element.getMember().getElementName();
-                                hasSource = false;
-                            }
-                            SinkMatch match = new SinkMatch(message, expr, element
-                                .getCompilationUnit(), element.getResource(), desc.getID(), element
-                                .getMember(), desc.getCategoryName(), isError, hasSource);
-                            cp.addMatch(match);
-                            matches++;
-                            if (isError) unsafe++;
-                        }
-//                        log(matches - matchesForMethod + ".");
-//                        Display.getDefault().syncExec(new Runnable() {
-//                            public void run() {
-//                                log(viewer.getTable().getItemCount() + " items.");
-//                            }
-//                        });
-                        if (matches > 0) {
-                            Display.getDefault().syncExec(new Runnable() {
-                                public void run() {
-                                    viewer.refresh();
-                                }
-                            });
-                        }
-                    }
-                    log(StringUtils.cutto(project.getProject().getName(), 20) + "\t:\t"
-                        + matches + "\ttotal sink(s),\t" + unsafe + "\tunsafe sink(s)");
-                    Unsafe += unsafe;
-                    Matches += matches;
-                }
-                Display.getDefault().syncExec(new Runnable() {
-                    public void run() {
-                        viewer.refresh();
-                    }
-                });
-                Assert.isTrue(cp.getMatchCount() == Matches, 
-                    "There is a mismatch between the number of metches in the view (" + 
-                    cp.getMatchCount() + ") and the total number of matches (" + 
-                    Matches + ")" );
-                log("\n" + StringUtils.cutto("All projects", 20) + "\t:\t" + Matches
-                    + "\ttotal sink(s),\t" + Unsafe + "\tunsafe sink(s)");
-                //statisticsManager.printStatistics();
-                return Status.OK_STATUS;
-            }
-        }).schedule();
+        (new ComputeSinksJob((ViewContentProvider)viewer.getContentProvider(), viewer)).schedule();
     }
 
     /*private Type findLocallyDeclaredType(String argName, CompilationUnit compilationUnit) {
@@ -1247,7 +930,7 @@ public class SinkView extends ViewPart {
         log(message, null);
     }
     
-    private static void logError(String message) {
+    static void logError(String message) {
         log(message, new Throwable());
     }
     

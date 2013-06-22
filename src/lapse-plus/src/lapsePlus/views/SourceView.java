@@ -16,44 +16,11 @@ import java.util.Vector;
 
 import lapsePlus.CallerFinder;
 import lapsePlus.LapsePlugin;
-import lapsePlus.Utils;
 import lapsePlus.XMLConfig;
-import lapsePlus.MethodSearchRequestor.MethodDeclarationsSearchRequestor;
-import lapsePlus.Utils.MethodDeclarationUnitPair;
-import lapsePlus.XMLConfig.SourceDescription;
-import lapsePlus.utils.StringUtils;
 
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jdt.core.IJavaModel;
-import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jdt.core.IMember;
-import org.eclipse.jdt.core.JavaModelException;
-import org.eclipse.jdt.core.dom.ASTNode;
-import org.eclipse.jdt.core.dom.CompilationUnit;
-import org.eclipse.jdt.core.dom.Expression;
-import org.eclipse.jdt.core.dom.InfixExpression;
-import org.eclipse.jdt.core.dom.MethodInvocation;
-import org.eclipse.jdt.core.dom.SimpleName;
-import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
-import org.eclipse.jdt.core.dom.StringLiteral;
-import org.eclipse.jdt.core.dom.VariableDeclaration;
-import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
-import org.eclipse.jdt.core.search.IJavaSearchConstants;
-import org.eclipse.jdt.core.search.IJavaSearchScope;
-import org.eclipse.jdt.core.search.SearchEngine;
-import org.eclipse.jdt.core.search.SearchParticipant;
-import org.eclipse.jdt.core.search.SearchPattern;
-import org.eclipse.jdt.internal.core.JavaModelManager;
-import org.eclipse.jdt.internal.core.JavaProject;
+import org.eclipse.core.runtime.Assert;
 import org.eclipse.jdt.internal.ui.JavaPluginImages;
 import org.eclipse.jdt.internal.ui.javaeditor.EditorUtility;
-import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuListener;
@@ -63,7 +30,6 @@ import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.util.Assert;
 import org.eclipse.jface.viewers.ColumnLayoutData;
 import org.eclipse.jface.viewers.ColumnPixelData;
 import org.eclipse.jface.viewers.ColumnWeightData;
@@ -121,7 +87,7 @@ public class SourceView extends ViewPart {
 	static final String ANT_TASK_TYPE = "org.apache.tools.ant.Task";
 	static final String ANT_TASK_METHODS = "set*";	
 	
-	class ViewContentProvider implements IStructuredContentProvider {
+	public static class ViewContentProvider implements IStructuredContentProvider {
 		
 		Vector<SourceMatch> matches = new Vector<SourceMatch>();
 		
@@ -300,9 +266,10 @@ public class SourceView extends ViewPart {
 	public void createPartControl(Composite parent) {
 		
 		fClipboard= new Clipboard(parent.getDisplay());
+		contentProvider = new ViewContentProvider();
 		
 		viewer = new LocationViewer(parent);
-		viewer.setContentProvider(new ViewContentProvider());
+		viewer.setContentProvider(contentProvider);
 		viewer.setLabelProvider(new ViewLabelProvider());
 		viewer.setSorter(new ColumnBasedSorter(2));
 		viewer.setInput(getViewSite());
@@ -368,184 +335,9 @@ public class SourceView extends ViewPart {
 	
 	private void computeSources() {
 		
-		(new Job("Computing Sources") {
-		protected IStatus run(IProgressMonitor monitor) {
-			
-			
-			//Clear matches
-			contentProvider.clearMatches();
-			
-			//((ViewContentProvider) viewer.getContentProvider()).clearMatches();
-			
-			Display.getDefault().syncExec(new Runnable() {
-				public void run() {
-					viewer.refresh();
-				}
-			});
-			
-			IJavaModel model = JavaModelManager.getJavaModelManager().getJavaModel();
-			IJavaProject[] projects;
-			
-			try {
-				projects = model.getJavaProjects();
-			} catch (JavaModelException e) {
-				log(e.getMessage(), e);
-				return Status.CANCEL_STATUS;
-			}
-			
-			for (int i = 0; i < projects.length; i++) {
-				final JavaProject project = (JavaProject) projects[i];
-				
-				log(
-						"------------------ Project " + 
-						StringUtils.cutto(project.getProject().getName(), 20) + 
-						"------------------ ");
-				
-//				if(!project.isOpen()) {
-//					System.out.println("Skipping " + project);
-//					continue;
-//				}
-				
-				Collection/*<SourceDescription>*/ sources = XMLConfig.readSources("sources.xml");
-				
-				if(sources == null || sources.size() == 0) {
-					logError("No interesting methods in " + project.getResource().getName());
-					continue;
-				}
-				
-				int matches = 0, old_matches = 0;
-				
-				log("\tProcessing " + sources.size() + " methods");
-				
-				for (Iterator descIter = sources.iterator(); descIter.hasNext(); ){
-					XMLConfig.SourceDescription desc = (SourceDescription) descIter.next();				
-					
-					log(
-							"Project " + project.getProject().getName() + 
-							": processing method " + desc.getID() + "...\t");
-					monitor.subTask("Project " + project.getProject().getName() + 
-							": processing method " + desc.getID() + "...\t");
-					
-					int index=desc.getMethodName().lastIndexOf('.');
-                    char aux=(desc.getMethodName().charAt(index+1));
-                    boolean isConstructor = aux<='Z';
-                    
-                    if(isConstructor)
-                    	System.out.println(desc.getMethodName()+" is constrcutor");
-                    
-                   // boolean isContructor = desc.getTypeName().endsWith(desc.getMethodName());
-                    
-					Collection callers/*<MethodUnitPair>*/ = CallerFinder.findCallers(monitor, desc.getID(), project, isConstructor);
-					
-					for (Iterator iter = callers.iterator(); iter.hasNext();) {
-						Utils.ExprUnitResourceMember element = (Utils.ExprUnitResourceMember) iter.next();
-						Expression expr = element.getExpression();
-						if(expr == null) {
-							log("Unexpected NULL in one of the callers");
-							continue;
-						}
-						// do a case on the expression:
-						
-						if(!(expr instanceof MethodInvocation)) {
-							logError("Can't match " + expr + " of type " + expr.getClass());
-							continue;
-						}
-						MethodInvocation mi = (MethodInvocation) expr;
-	
-						SourceMatch match = new SourceMatch(
-								expr.toString(), 
-								expr, 
-								element.getCompilationUnit(), 
-								element.getResource(),																
-								desc.getID(),
-								desc.getCategoryName(),
-								element.getMember(),
-								false,
-								false);
-						contentProvider.addMatch(match);
-						matches++;
-					}
-					
-					if(matches > old_matches){
-						Display.getDefault().syncExec(new Runnable() {
-							public void run() {
-								viewer.refresh();
-							}
-						});
-					}
-					old_matches = matches;					
-				}
-				
-//				System.out.println("Found " + matches + " matche(s).");
-				// find all main methods
-				log("Looking for 'main' arguments");
-				monitor.subTask("Looking for 'main' arguments");
-				matches += addMethodsByName("main", "'main' declaration", "main argument", project, monitor, true);
-				
-				// find Ant entry points
-				log("Looking for Ant task entry points");
-				monitor.subTask("Looking for Ant task entry points");
-				matches += addMethodsByName(ANT_TASK_TYPE + "." + ANT_TASK_METHODS, "Ant task entry point", "ANT", project, monitor, true);
-				
-				logError(project.getProject().getName() + "\t:\t" + matches + " matche(s)");
-			}
-			Display.getDefault().syncExec(new Runnable() {
-				public void run() {
-					viewer.refresh();
-				}
-			});
-			logError("There are " + contentProvider.getMatchCount() + " matches");
-			
-			return Status.OK_STATUS;
-		}}).schedule();
+		(new ComputeSourcesJob(contentProvider)).schedule();
 	}
 	
-	int addMethodsByName(String methodName, String type, String category, JavaProject project, IProgressMonitor monitor, boolean nonWeb) {
-		int matches = 0;
-		ViewContentProvider cp = ((ViewContentProvider)viewer.getContentProvider());
-		try {
-			MethodDeclarationsSearchRequestor requestor = new MethodDeclarationsSearchRequestor();
-            SearchEngine searchEngine = new SearchEngine();
-
-            IJavaSearchScope searchScope = CallerFinder.getSearchScope(project);
-            SearchPattern pattern = SearchPattern.createPattern(
-            		methodName, 
-					IJavaSearchConstants.METHOD,
-					IJavaSearchConstants.DECLARATIONS, 
-					SearchPattern.R_PATTERN_MATCH | SearchPattern.R_CASE_SENSITIVE
-					);
-     
-			searchEngine.search(
-					pattern, 
-					new SearchParticipant[] { SearchEngine.getDefaultSearchParticipant() },
-			        searchScope, 
-			        requestor, 
-					monitor
-					);
-			Collection pairs =  requestor.getMethodUnitPairs();
-			for(Iterator iter = pairs.iterator(); iter.hasNext();) {
-				Utils.MethodDeclarationUnitPair pair = (MethodDeclarationUnitPair) iter.next();
-				SourceMatch match = new SourceMatch(
-						pair.getMember().getDeclaringType().getElementName() + "." + pair.getMember().getElementName(),  
-						pair.getMethod() != null ? pair.getMethod().getName() : null, 
-						pair.getCompilationUnit(), 
-						pair.getResource(), 
-						type,
-						category,
-						pair.getMember(),
-						false,
-						nonWeb);
-				cp.addMatch(match);
-				monitor.subTask("Found " + matches + " matches");
-				matches++;
-			}
-		} catch (CoreException e) {
-			// TODO Auto-generated catch block
-			log(e.getMessage(), e);
-		}
-		
-		return matches;
-	}
 
     /*
 	private Type findLocallyDeclaredType(String argName, CompilationUnit compilationUnit) {
@@ -573,8 +365,6 @@ public class SourceView extends ViewPart {
 	}*/
 	
 	private void makeActions() {
-		
-		contentProvider = ((ViewContentProvider)viewer.getContentProvider());
 		
 		runAction = new Action() {
 			public void run() {
@@ -841,15 +631,15 @@ public class SourceView extends ViewPart {
 		return false;
     }
 
-    private static void log(String message, Throwable e) {
+    static void log(String message, Throwable e) {
         LapsePlugin.trace(LapsePlugin.SOURCE_DEBUG, "Source view: " + message, e);
     }
     
-    private static void log(String message) {
+    static void log(String message) {
         log(message, null);
     }
     
-    private static void logError(String message) {
+    static void logError(String message) {
         log(message, new Throwable());
     }
 }
