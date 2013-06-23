@@ -667,7 +667,7 @@ public class SinkView extends ViewPart {
                 boolean hasFilter = false;
                 ViewerFilter filter = new ViewerFilter() {
                     public boolean select(Viewer viewer, Object parentElement, Object element) {
-                        ViewMatch match = (ViewMatch) element;
+                        SinkMatch match = (SinkMatch) element;
                         return match.getCategory().equalsIgnoreCase("Regex Injection");
                     }
                 };
