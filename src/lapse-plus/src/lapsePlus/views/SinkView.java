@@ -105,7 +105,8 @@ public class SinkView extends ViewPart {
         showHttpResponseAction,
         showCommandInjectionAction,
         showLDAPAction,
-        showXPathAction;
+        showXPathAction,
+        showRegexAction;
     private Clipboard fClipboard;
     private StatisticsManager statisticsManager = new StatisticsManager();
     
@@ -299,7 +300,7 @@ public class SinkView extends ViewPart {
         LapseMultiActionGroup group = 
             new LapseCheckboxActionGroup(
                 new IAction[]{
-                hideSafeAction, hideNoSourceAction, showSQLAction, showXSSAction, showPTAction,showHttpResponseAction,showCommandInjectionAction,showLDAPAction,showXPathAction},
+                hideSafeAction, hideNoSourceAction, showSQLAction, showXSSAction, showPTAction,showHttpResponseAction,showCommandInjectionAction,showLDAPAction,showXPathAction,showRegexAction},
                 new boolean[]{true, true, false, false, false,false,false,false,false});
         group.addActions(bars.getMenuManager());
     }
@@ -659,6 +660,29 @@ public class SinkView extends ViewPart {
                 }
             };
             showXPathAction.setImageDescriptor(JavaPluginImages.DESC_ELCL_FILTER);
+        }
+        
+        {
+            showRegexAction = new Action("Show Regex Injection vulnerabilities only", IAction.AS_CHECK_BOX) {
+                boolean hasFilter = false;
+                ViewerFilter filter = new ViewerFilter() {
+                    public boolean select(Viewer viewer, Object parentElement, Object element) {
+                        ViewMatch match = (ViewMatch) element;
+                        return match.getCategory().equalsIgnoreCase("Regex Injection");
+                    }
+                };
+
+                public void run() {
+                    if (!hasFilter) {
+                        viewer.addFilter(filter);
+                        hasFilter = true;
+                    } else {
+                        viewer.removeFilter(filter);
+                        hasFilter = false;
+                    }
+                }
+            };
+            showRegexAction.setImageDescriptor(JavaPluginImages.DESC_ELCL_FILTER);
         }
         
         
