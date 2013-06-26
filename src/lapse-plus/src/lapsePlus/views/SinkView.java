@@ -503,188 +503,15 @@ public class SinkView extends ViewPart {
             };
             hideSafeAction.setImageDescriptor(JavaPluginImages.DESC_ELCL_FILTER);
         }
-        {
-            showSQLAction = new Action("Show SQL Injection vulnerabilities only", IAction.AS_CHECK_BOX) {
-                boolean hasFilter = false;
-                ViewerFilter filter = new ViewerFilter() {
-                    public boolean select(Viewer viewer, Object parentElement, Object element) {
-                        SinkMatch match = (SinkMatch) element;
-                        return match.getCategory().equalsIgnoreCase("SQL Injection");
-                    }
-                };
 
-                public void run() {
-                    if (!hasFilter) {
-                        viewer.addFilter(filter);
-                        hasFilter = true;
-                    } else {
-                        viewer.removeFilter(filter);
-                        hasFilter = false;
-                    }
-                }
-            };
-            showSQLAction.setImageDescriptor(JavaPluginImages.DESC_ELCL_FILTER);
-        }
-        {
-            showXSSAction = new Action("Show Cross-site Scripting vulnerabilities only", IAction.AS_CHECK_BOX) {
-                boolean hasFilter = false;
-                ViewerFilter filter = new ViewerFilter() {
-                    public boolean select(Viewer viewer, Object parentElement, Object element) {
-                        SinkMatch match = (SinkMatch) element;
-                        return match.getCategory().equalsIgnoreCase("Cross-site Scripting");
-                    }
-                };
-
-                public void run() {
-                    if (!hasFilter) {
-                        viewer.addFilter(filter);
-                        hasFilter = true;
-                    } else {
-                        viewer.removeFilter(filter);
-                        hasFilter = false;
-                    }
-                }
-            };
-            showXSSAction.setImageDescriptor(JavaPluginImages.DESC_ELCL_FILTER);
-        }
-        {
-            showPTAction = new Action("Show Path Traversal vulnerabilities only", IAction.AS_CHECK_BOX) {
-                boolean hasFilter = false;
-                ViewerFilter filter = new ViewerFilter() {
-                    public boolean select(Viewer viewer, Object parentElement, Object element) {
-                        SinkMatch match = (SinkMatch) element;
-                        return match.getCategory().equalsIgnoreCase("Path Traversal");
-                    }
-                };
-
-                public void run() {
-                    if (!hasFilter) {
-                        viewer.addFilter(filter);
-                        hasFilter = true;
-                    } else {
-                        viewer.removeFilter(filter);
-                        hasFilter = false;
-                    }
-                }
-            };
-            showPTAction.setImageDescriptor(JavaPluginImages.DESC_ELCL_FILTER);
-        }
-        
-        {
-            showHttpResponseAction = new Action("Show Http Response Splitting vulnerabilities only", IAction.AS_CHECK_BOX) {
-                boolean hasFilter = false;
-                ViewerFilter filter = new ViewerFilter() {
-                    public boolean select(Viewer viewer, Object parentElement, Object element) {
-                        SinkMatch match = (SinkMatch) element;
-                        return match.getCategory().equalsIgnoreCase("HTTP Response Splitting");
-                    }
-                };
-
-                public void run() {
-                    if (!hasFilter) {
-                        viewer.addFilter(filter);
-                        hasFilter = true;
-                    } else {
-                        viewer.removeFilter(filter);
-                        hasFilter = false;
-                    }
-                }
-            };
-            showHttpResponseAction.setImageDescriptor(JavaPluginImages.DESC_ELCL_FILTER);
-        }
-        
-        {
-            showCommandInjectionAction = new Action("Show Command Injection vulnerabilities only", IAction.AS_CHECK_BOX) {
-                boolean hasFilter = false;
-                ViewerFilter filter = new ViewerFilter() {
-                    public boolean select(Viewer viewer, Object parentElement, Object element) {
-                        SinkMatch match = (SinkMatch) element;
-                        return match.getCategory().equalsIgnoreCase("Command Injection");
-                    }
-                };
-
-                public void run() {
-                    if (!hasFilter) {
-                        viewer.addFilter(filter);
-                        hasFilter = true;
-                    } else {
-                        viewer.removeFilter(filter);
-                        hasFilter = false;
-                    }
-                }
-            };
-            showCommandInjectionAction.setImageDescriptor(JavaPluginImages.DESC_ELCL_FILTER);
-        }
-        
-        {
-            showLDAPAction = new Action("Show LDAP Injection vulnerabilities only", IAction.AS_CHECK_BOX) {
-                boolean hasFilter = false;
-                ViewerFilter filter = new ViewerFilter() {
-                    public boolean select(Viewer viewer, Object parentElement, Object element) {
-                        SinkMatch match = (SinkMatch) element;
-                        return match.getCategory().equalsIgnoreCase("LDAP Injection");
-                    }
-                };
-
-                public void run() {
-                    if (!hasFilter) {
-                        viewer.addFilter(filter);
-                        hasFilter = true;
-                    } else {
-                        viewer.removeFilter(filter);
-                        hasFilter = false;
-                    }
-                }
-            };
-            showLDAPAction.setImageDescriptor(JavaPluginImages.DESC_ELCL_FILTER);
-        }
-        
-        {
-            showXPathAction = new Action("Show XPath Injection vulnerabilities only", IAction.AS_CHECK_BOX) {
-                boolean hasFilter = false;
-                ViewerFilter filter = new ViewerFilter() {
-                    public boolean select(Viewer viewer, Object parentElement, Object element) {
-                        SinkMatch match = (SinkMatch) element;
-                        return match.getCategory().equalsIgnoreCase("XPath Injection");
-                    }
-                };
-
-                public void run() {
-                    if (!hasFilter) {
-                        viewer.addFilter(filter);
-                        hasFilter = true;
-                    } else {
-                        viewer.removeFilter(filter);
-                        hasFilter = false;
-                    }
-                }
-            };
-            showXPathAction.setImageDescriptor(JavaPluginImages.DESC_ELCL_FILTER);
-        }
-        
-        {
-            showRegexAction = new Action("Show Regex Injection vulnerabilities only", IAction.AS_CHECK_BOX) {
-                boolean hasFilter = false;
-                ViewerFilter filter = new ViewerFilter() {
-                    public boolean select(Viewer viewer, Object parentElement, Object element) {
-                        SinkMatch match = (SinkMatch) element;
-                        return match.getCategory().equalsIgnoreCase("Regex Injection");
-                    }
-                };
-
-                public void run() {
-                    if (!hasFilter) {
-                        viewer.addFilter(filter);
-                        hasFilter = true;
-                    } else {
-                        viewer.removeFilter(filter);
-                        hasFilter = false;
-                    }
-                }
-            };
-            showRegexAction.setImageDescriptor(JavaPluginImages.DESC_ELCL_FILTER);
-        }
-        
+        showSQLAction = new CategoryFilterAction(viewer, "Show SQL Injection vulnerabilities only", "SQL Injection");
+		showXSSAction = new CategoryFilterAction(viewer, "Show Cross-site Scripting vulnerabilities only", "Cross-site Scripting");
+		showPTAction = new CategoryFilterAction(viewer, "Show Path Traversal vulnerabilities only", "Path Traversal");
+		showHttpResponseAction = new CategoryFilterAction(viewer, "Show Http Response Splitting vulnerabilities only", "HTTP Response Splitting");
+		showCommandInjectionAction = new CategoryFilterAction(viewer, "Show Command Injection vulnerabilities only", "Command Injection");
+		showLDAPAction = new CategoryFilterAction(viewer, "Show LDAP Injection vulnerabilities only", "LDAP Injection");
+		showXPathAction = new CategoryFilterAction(viewer, "Show XPath Injection vulnerabilities only", "XPath Injection");
+		showRegexAction = new CategoryFilterAction(viewer, "Show Regex Injection vulnerabilities only", "Regex Injection");
         
         {
             hideNoSourceAction = new Action("Hide vulnerability sinks without source code", IAction.AS_CHECK_BOX) {
@@ -709,11 +536,10 @@ public class SinkView extends ViewPart {
             hideNoSourceAction.setImageDescriptor(JavaPluginImages.DESC_ELCL_FILTER);
         }
         {
-            final SinkView sinkView = this;
             statAction = new Action() {
                 public void run() {
                     SinkStatsDialog dialog = new SinkStatsDialog(viewer.getControl().getShell(),
-                        sinkView);
+                        SinkView.this);
                     // dialog.create();
                     dialog.open();
                     dialog.getReturnCode();
