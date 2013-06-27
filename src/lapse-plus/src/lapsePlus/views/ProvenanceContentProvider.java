@@ -113,8 +113,6 @@ public interface ProvenanceContentProvider extends ITreeContentProvider {
 		 */
 		public boolean hasChildren(Object element) {
 			if (element instanceof HistoryDefinitionLocation) {
-				if(element == null) return false;
-				
 				Collection children = ((HistoryDefinitionLocation) element).getChildren();
 				return children != null && !children.isEmpty();
 			}

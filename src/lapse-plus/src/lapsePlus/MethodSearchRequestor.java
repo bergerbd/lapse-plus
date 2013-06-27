@@ -31,9 +31,9 @@ public class MethodSearchRequestor{
 	
 	static Map<ICompilationUnit, CompilationUnit> parserMap;
 
-	// Settings
-	final static boolean SKIP_NOT_SOURCE = false;
-	final static boolean SKIP_BINARY = false;
+	// TODO Move settings to a configuration dialog
+	private static boolean SKIP_NOT_SOURCE = false;
+	private  static boolean SKIP_BINARY = false;
 
 	static CompilationUnit retrieveCompilationUnit(ICompilationUnit unit) {
 		CompilationUnit cu = (CompilationUnit) parserMap.get(unit);
