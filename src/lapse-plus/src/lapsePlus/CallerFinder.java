@@ -7,13 +7,14 @@ package lapsePlus;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubProgressMonitor;
+import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.JavaModelException;
@@ -31,9 +32,6 @@ import org.eclipse.jdt.core.search.SearchEngine;
 import org.eclipse.jdt.core.search.SearchParticipant;
 import org.eclipse.jdt.core.search.SearchPattern;
 import org.eclipse.jdt.core.search.SearchRequestor;
-import org.eclipse.jdt.internal.core.JavaProject;
-import org.eclipse.jdt.internal.core.search.JavaSearchScope;
-import org.eclipse.jdt.internal.ui.JavaPlugin;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.ui.PlatformUI;
 
@@ -41,13 +39,13 @@ public class CallerFinder {
 	    
     private static IJavaSearchScope fSearchScope;
 
-    public static Collection/*<Util.ExprUn...>*/ findCallers(final String methodName, final JavaProject project, final boolean isConstructor) {
+    public static Collection/*<Util.ExprUn...>*/ findCallers(final String methodName, final IJavaProject project, final boolean isConstructor) {
     	class FindingOp implements IRunnableWithProgress { 
     		Collection c = null;
     		public void run(IProgressMonitor monitor) {
     			c = findCallers(monitor, methodName, project, isConstructor);
     			if(c == null) {
-    				JavaPlugin.logErrorMessage("Collection is null");
+    				logError("Collection is null");
     			}
 //    			notify();
     		}
@@ -60,11 +58,11 @@ public class CallerFinder {
 //			operation.wait();
 			Collection c = operation.getCollection();
 			if(c == null) {
-				JavaPlugin.logErrorMessage("No collection is computed");
+				logError("No collection is computed");
 			}
 			return c;
 		} catch (InvocationTargetException e) {
-			JavaPlugin.log(e);
+			log(e);
 		} catch (InterruptedException e) {
 			// canceled
 		}
@@ -76,13 +74,13 @@ public class CallerFinder {
 		return null;
 	}
     
-    public static Collection/*<MethodDeclarationUnitPair>*/ findMethods(final SimpleName methodName, final JavaProject project, final boolean isConstructor) {
+    public static Collection/*<MethodDeclarationUnitPair>*/ findMethods(final SimpleName methodName, final IJavaProject project, final boolean isConstructor) {
     	class FindingOp implements IRunnableWithProgress { 
     		Collection c = null;
     		public void run(IProgressMonitor monitor) {
     			c = findCallees(monitor, methodName.toString(), project, isConstructor);
     			if(c == null) {
-    				JavaPlugin.logErrorMessage("Collection is null");
+    				logError("Collection is null");
     			}
 //    			notify();
     		}
@@ -94,11 +92,11 @@ public class CallerFinder {
 //			operation.wait();
 			Collection c = operation.getCollection();
 			if(c == null) {
-				JavaPlugin.logErrorMessage("No collection is computed");
+				logError("No collection is computed");
 			}
 			return c;
 		} catch (InvocationTargetException e) {
-			JavaPlugin.log(e);
+			log(e);
 		} catch (InterruptedException e) {
 			// canceled
 		}
@@ -136,7 +134,7 @@ public class CallerFinder {
 
             return searchRequestor.getMethodUnitPairs();
         } catch (CoreException e) {
-            JavaPlugin.log(e);
+            log(e);
 
             return new LinkedList();
         }
@@ -145,7 +143,7 @@ public class CallerFinder {
 	/**
 	 * Returns a collection of return statements withing @param methodDeclaration.
 	 * */
-	public static Collection<ReturnStatement> findReturns(IProgressMonitor progressMonitor, MethodDeclaration methodDeclaration, JavaProject project) {
+	public static Collection<ReturnStatement> findReturns(IProgressMonitor progressMonitor, MethodDeclaration methodDeclaration, IJavaProject project) {
 		progressMonitor.setTaskName("Looking for returns in " + methodDeclaration.getName());
 		final Collection<ReturnStatement> returns = new ArrayList<ReturnStatement>();
 		ASTVisitor finder = new ASTVisitor() {			
@@ -205,7 +203,7 @@ public class CallerFinder {
 		return result;
 	}
 	
-	public static Collection/*<ExpressionUnitPair>*/ getActualsForFormal(final IMethod method, final Name name, final Expression onlyCall, final JavaProject project) {
+	public static Collection/*<ExpressionUnitPair>*/ getActualsForFormal(final IMethod method, final Name name, final Expression onlyCall, final IJavaProject project) {
 		class FindingOp implements IRunnableWithProgress { 
 			Collection c = null;
 			public void run(IProgressMonitor monitor) {
@@ -219,7 +217,7 @@ public class CallerFinder {
 			
 			return operation.getCollection();
 		} catch (InvocationTargetException e) {
-			JavaPlugin.log(e);
+			log(e);
 		} catch (InterruptedException e) {
 			// canceled
 		}
@@ -231,7 +229,7 @@ public class CallerFinder {
         try {
             isConstructor = member.isConstructor(); // interrogate the member itself
         } catch (JavaModelException e) {
-            JavaPlugin.log(e);
+            log(e);
         }
         String methodName = isConstructor ?
             member.getDeclaringType().getElementName() :
@@ -282,7 +280,7 @@ public class CallerFinder {
             }
             
         } catch (CoreException e) {
-            JavaPlugin.log(e);
+            log(e);
 
             return new LinkedList();
         }
@@ -321,7 +319,7 @@ public class CallerFinder {
                 return ((MethodSearchRequestor.MethodReferencesSearchRequestor)searchRequestor).getMethodUnitPairs();
             }
         } catch (CoreException e) {
-            JavaPlugin.log(e);
+            log(e);
 
             return new LinkedList();
         }
@@ -337,17 +335,20 @@ public class CallerFinder {
     	if(project == null) {	        
 	        return fSearchScope;
     	} else {
-    		JavaSearchScope js = new JavaSearchScope();
+    		IJavaSearchScope js = SearchEngine.createJavaSearchScope(new IJavaElement [] {project});
+    		/* TODO Did we change the behaviour?
     		try {
     			int includeMask = 
     				JavaSearchScope.SOURCES | 
 					JavaSearchScope.APPLICATION_LIBRARIES | 
 					JavaSearchScope.SYSTEM_LIBRARIES ;
-				js.add((JavaProject) project, includeMask, new HashSet());
+    			js.setIncludesBinaries(includesBinaries)
+				js.add(project, includeMask, new HashSet());
 			} catch (JavaModelException e) {
 				log(e.getMessage(), e);
 				return fSearchScope;
 			}
+			*/
     		return js;
     	} 
     }    	
@@ -363,7 +364,7 @@ public class CallerFinder {
 			} else if(mi instanceof MethodInvocation) {
 				args = ((MethodInvocation)mi).arguments();
 			} else {
-				JavaPlugin.logErrorMessage("Unexpected type in mapFormal2Actual for " + mi);
+				logError("Unexpected type in mapFormal2Actual for " + mi);
 				return null;
 			}
 	    	
@@ -406,6 +407,9 @@ public class CallerFinder {
         log(message, new Throwable());
     }
     
+    private static void log(final Throwable e) {
+        log("", e);
+    }
     private static void log(String message) {
         log(message, null);
     }

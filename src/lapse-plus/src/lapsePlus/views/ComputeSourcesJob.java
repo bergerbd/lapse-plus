@@ -29,7 +29,6 @@ import org.eclipse.jdt.core.search.SearchEngine;
 import org.eclipse.jdt.core.search.SearchParticipant;
 import org.eclipse.jdt.core.search.SearchPattern;
 import org.eclipse.jdt.internal.core.JavaModelManager;
-import org.eclipse.jdt.internal.core.JavaProject;
 import org.eclipse.swt.widgets.Display;
 
 final class ComputeSourcesJob extends Job {
@@ -66,7 +65,7 @@ final class ComputeSourcesJob extends Job {
 		}
 
 		for (int i = 0; i < projects.length; i++) {
-			final JavaProject project = (JavaProject) projects[i];
+			final IJavaProject project = projects[i];
 
 			SourceView.log(
 					"------------------ Project " + 
@@ -78,7 +77,7 @@ final class ComputeSourcesJob extends Job {
 			//					continue;
 			//				}
 
-			Collection/*<SourceDescription>*/ sources = XMLConfig.readSources("sources.xml");
+			Collection<SourceDescription> sources = XMLConfig.readSources("sources.xml");
 
 			if(sources == null || sources.size() == 0) {
 				SourceView.logError("No interesting methods in " + project.getResource().getName());
@@ -89,8 +88,8 @@ final class ComputeSourcesJob extends Job {
 
 			SourceView.log("\tProcessing " + sources.size() + " methods");
 
-			for (Iterator descIter = sources.iterator(); descIter.hasNext(); ){
-				XMLConfig.SourceDescription desc = (SourceDescription) descIter.next();				
+			for (Iterator<SourceDescription> descIter = sources.iterator(); descIter.hasNext(); ){
+				SourceDescription desc = descIter.next();				
 
 				SourceView.log(
 						"Project " + project.getProject().getName() + 
@@ -171,7 +170,7 @@ final class ComputeSourcesJob extends Job {
 		return Status.OK_STATUS;
 	}
 
-	int addMethodsByName(String methodName, String type, String category, JavaProject project, IProgressMonitor monitor, boolean nonWeb) {
+	int addMethodsByName(String methodName, String type, String category, IJavaProject project, IProgressMonitor monitor, boolean nonWeb) {
 		int matches = 0;
 		try {
 			MethodDeclarationsSearchRequestor requestor = new MethodDeclarationsSearchRequestor();

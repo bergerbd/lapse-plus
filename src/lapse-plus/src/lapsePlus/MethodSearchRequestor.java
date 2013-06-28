@@ -9,6 +9,9 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import lapsePlus.Utils.ExprUnitResourceMember;
+import lapsePlus.Utils.MethodDeclarationUnitPair;
+
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IMember;
@@ -69,7 +72,7 @@ public class MethodSearchRequestor{
 						resource, member));
 			}
 
-			public Collection/* <MethodUnitPair> */getMethodUnitPairs() {
+			public Collection<ExprUnitResourceMember> getMethodUnitPairs() {
 				return _methodUnitPairs;
 			}
 		}
@@ -163,7 +166,7 @@ public class MethodSearchRequestor{
 			}
 		}
 
-		public Collection/* <MethodUnitPair> */getMethodUnitPairs() {
+		public Collection<ExprUnitResourceMember> getMethodUnitPairs() {
 			return fSearchResults.getMethodUnitPairs();
 		}
 	}
@@ -184,7 +187,7 @@ public class MethodSearchRequestor{
 								resource, member));
 			}
 
-			public Collection/* <MethodDeclarationUnitPair> */getMethodDeclarationUnitPairs() {
+			public Collection<MethodDeclarationUnitPair> getMethodDeclarationUnitPairs() {
 				return _methodDeclarationUnitPairs;
 			}
 		}
@@ -271,7 +274,7 @@ public class MethodSearchRequestor{
 			}
 		}
 
-		public Collection/* <MethodDeclarationUnitPair> */getMethodUnitPairs() {
+		public Collection<MethodDeclarationUnitPair> getMethodUnitPairs() {
 			return fSearchResults.getMethodDeclarationUnitPairs();
 		}
 	}

@@ -25,6 +25,8 @@ import org.eclipse.jdt.core.dom.ClassInstanceCreation;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.internal.ui.JavaPluginImages;
 import org.eclipse.jdt.internal.ui.javaeditor.EditorUtility;
+import org.eclipse.jdt.ui.ISharedImages;
+import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuListener;
@@ -203,8 +205,8 @@ public class SinkView extends ViewPart {
             SinkMatch match = (SinkMatch) obj;
             if (index == 0) {
                 return match.isError()
-                    ? JavaPluginImages.get(JavaPluginImages.IMG_OBJS_ERROR)
-                    : JavaPluginImages.get(JavaPluginImages.IMG_FIELD_PUBLIC);
+                    ?  JavaPluginImages.get(JavaPluginImages.IMG_OBJS_ERROR)
+                    : JavaUI.getSharedImages().getImage(ISharedImages.IMG_FIELD_PUBLIC);
             }
             return null;
         }
