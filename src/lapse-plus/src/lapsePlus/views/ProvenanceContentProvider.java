@@ -11,6 +11,7 @@ import java.util.Iterator;
 import java.util.Vector;
 
 import lapsePlus.HistoryDefinitionLocation;
+import lapsePlus.LapsePlugin;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jdt.internal.ui.JavaPlugin;
@@ -85,7 +86,7 @@ public interface ProvenanceContentProvider extends ITreeContentProvider {
 		
 		private void addElementsUnder(HistoryDefinitionLocation currentInput, ArrayList<HistoryDefinitionLocation> result) {
 			if(currentInput == null) {
-				JavaPlugin.logErrorMessage("Called addElementsUnder with currentInput==null");
+				logError("Called addElementsUnder with currentInput==null");
 				return;
 			} else {
 				result.add(currentInput);		// the only place where elements are added
@@ -190,7 +191,7 @@ public interface ProvenanceContentProvider extends ITreeContentProvider {
 				setElement(defLoc);
 			} else 
 			if(defLoc != element){
-				JavaPlugin.logErrorMessage("Error in addElement(...): calling addElement with " + defLoc + 
+				logError("Error in addElement(...): calling addElement with " + defLoc + 
 						" old value: " + element);
 			} else {
 				// just setting it twice, it's benign, I guess
@@ -231,6 +232,14 @@ public interface ProvenanceContentProvider extends ITreeContentProvider {
 			}
 			return maxLevel + 1;
 		}
+		
+	    private static void log(String message, Throwable e) {
+	        LapsePlugin.trace(LapsePlugin.SINK_DEBUG, "Sink view: " + message, e);
+	    }
+	    
+	    static void logError(String message) {
+	        log(message, new Throwable());
+	    }
 	}
 	
 	public class FlatViewContentProvider implements ProvenanceContentProvider {
@@ -351,4 +360,5 @@ public interface ProvenanceContentProvider extends ITreeContentProvider {
 			return null;
 		}
 	}
+
 }

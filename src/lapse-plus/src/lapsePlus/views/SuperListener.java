@@ -4,6 +4,8 @@ package lapsePlus.views;
 * SuperListener.java,version 2.8, 2010
 */
 
+import lapsePlus.LapsePlugin;
+
 import org.eclipse.core.filebuffers.IFileBuffer;
 import org.eclipse.core.filebuffers.IFileBufferListener;
 import org.eclipse.core.filebuffers.ITextFileBuffer;
@@ -49,7 +51,7 @@ class SuperListener implements ISelectionListener, IFileBufferListener, IDocumen
 				}
 				
 			} catch (CoreException e) {
-				JavaPlugin.logErrorMessage("Caught exception: " + e.toString());
+				logError("Caught exception: " + e.toString());
 				return;
 			}				
 		}
@@ -80,8 +82,16 @@ class SuperListener implements ISelectionListener, IFileBufferListener, IDocumen
 		try {
 			this.view.setInput(this.view.fEditor);	
 		} catch (CoreException e) {
-			JavaPlugin.log(e);
+			log("", e);
 		}			
 	}
 	public void documentAboutToBeChanged(DocumentEvent event) {}		
+
+    private static void log(String message, Throwable e) {
+        LapsePlugin.trace(LapsePlugin.SINK_DEBUG, "Sink view: " + message, e);
+    }
+    
+    static void logError(String message) {
+        log(message, new Throwable());
+    }
 }

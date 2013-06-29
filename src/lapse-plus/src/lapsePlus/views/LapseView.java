@@ -686,7 +686,7 @@ public class LapseView extends ViewPart{
 								e.printStackTrace();
 							}
 							if(editor == null) {
-								JavaPlugin.logErrorMessage("Can't open an editor for " + dl.getASTNode());
+								logError("Can't open an editor for " + dl.getASTNode());
 								return;
 							}
 							
@@ -818,7 +818,7 @@ public class LapseView extends ViewPart{
 			MethodDeclaration methodDecl = (MethodDeclaration) decl.getParent();
 			IMethod method = new MethodFinder((IFile) resource).convertMethodDecl2IMethod(methodDecl);
 			if(method == null) {
-				JavaPlugin.logErrorMessage("Internal error: No method found for " + methodDecl);
+				logError("Internal error: No method found for " + methodDecl);
 				return;
 			}
 
@@ -1170,7 +1170,7 @@ public class LapseView extends ViewPart{
 	private CompilationUnit internalSetInput(IOpenable input) throws CoreException {
 		IBuffer buffer = input.getBuffer();
 		if (buffer == null) {
-			JavaPlugin.logErrorMessage("Input has no buffer"); //$NON-NLS-1$
+			logError("Input has no buffer"); //$NON-NLS-1$
 		}
 		if (input instanceof ICompilationUnit) {
 			fParser.setSource((ICompilationUnit) input);
@@ -1183,12 +1183,12 @@ public class LapseView extends ViewPart{
 			log("Recomputed the AST for " + buffer.getUnderlyingResource().getName());
 							
 			if (root == null) {
-				JavaPlugin.logErrorMessage("Could not create AST"); //$NON-NLS-1$
+				logError("Could not create AST"); //$NON-NLS-1$
 			}
 	
 			return root;
 		} catch (RuntimeException e) {
-			JavaPlugin.logErrorMessage("Could not create AST:\n" + e.getMessage()); //$NON-NLS-1$
+			logError("Could not create AST:\n" + e.getMessage()); //$NON-NLS-1$
 			return null;
 		}
 	}
@@ -1212,7 +1212,7 @@ public class LapseView extends ViewPart{
 			public void run() {
 				try {
 					if(fEditor == null) {
-						JavaPlugin.logErrorMessage("fEditor == null, can't compute the slice");
+						logError("fEditor == null, can't compute the slice");
 						return;
 					}
 					ISelectionProvider selProv = fEditor.getSelectionProvider();
@@ -1359,7 +1359,7 @@ public class LapseView extends ViewPart{
 	}
 	void toggleViewer() {
 		if(fContentProvider == null) {
-			JavaPlugin.logErrorMessage("In switchViewer with null");
+			logError("In switchViewer with null");
 			return;
 		}
 		// do the switch
