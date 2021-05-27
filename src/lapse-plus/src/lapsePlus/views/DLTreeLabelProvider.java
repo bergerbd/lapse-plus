@@ -5,23 +5,15 @@ package lapsePlus.views;
 */
 
 import lapsePlus.HistoryDefinitionLocation;
+import lapsePlus.utils.XMLConfigWrapper;
 
 import org.eclipse.jdt.core.dom.ClassInstanceCreation;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.MethodInvocation;
-import org.eclipse.jdt.internal.ui.JavaPlugin;
-import org.eclipse.jdt.internal.ui.JavaPluginImages;
-import org.eclipse.jdt.internal.ui.callhierarchy.CallHierarchyImageDescriptor;
-import org.eclipse.jdt.internal.ui.viewsupport.ImageImageDescriptor;
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.internal.dialogs.ViewLabelProvider;
 
 public class DLTreeLabelProvider /*implements ILabelProvider*/ extends ColorDecoratingLabelProvider {
 	public DLTreeLabelProvider() {
@@ -29,28 +21,28 @@ public class DLTreeLabelProvider /*implements ILabelProvider*/ extends ColorDeco
 	}
 	
 	public Color getForeground(Object element) {
-		Display display = Display.getCurrent();
-		HistoryDefinitionLocation loc = (HistoryDefinitionLocation) element;
+		final Display display = Display.getCurrent();
+		final HistoryDefinitionLocation loc = (HistoryDefinitionLocation) element;
 
 		if(loc.isConstant()) {
 			return display.getSystemColor(SWT.COLOR_DARK_BLUE);
 		} else {
 		    String fullCalleeName = null;
 			if(loc.getASTNode() instanceof MethodInvocation) {
-				MethodInvocation mi = (MethodInvocation) loc.getASTNode();
-				Expression s=mi.getExpression();
+				final MethodInvocation mi = (MethodInvocation) loc.getASTNode();
+				final Expression s = mi.getExpression();
 				fullCalleeName = mi.getName().getFullyQualifiedName();
-			}else
-		    if(loc.getASTNode() instanceof ClassInstanceCreation) {
-		        ClassInstanceCreation mi = (ClassInstanceCreation) loc.getASTNode();
+			} else if(loc.getASTNode() instanceof ClassInstanceCreation) {
+		        final ClassInstanceCreation mi = (ClassInstanceCreation) loc.getASTNode();
 				fullCalleeName = mi.getType().toString();
 			}
+			
+			
 		    
 		    if(fullCalleeName != null) {
-				if(SourceView.isSourceName(fullCalleeName)) {
+				if(XMLConfigWrapper.isSourceName(loc.getResource().getProject(), fullCalleeName)) {
 					return display.getSystemColor(SWT.COLOR_DARK_RED);
-				} else
-			    if(SourceView.isSafeName(fullCalleeName)) {
+				} else if(XMLConfigWrapper.isSafeName(loc.getResource().getProject(), fullCalleeName)) {
 					return display.getSystemColor(SWT.COLOR_DARK_GREEN);
 				}
 			}

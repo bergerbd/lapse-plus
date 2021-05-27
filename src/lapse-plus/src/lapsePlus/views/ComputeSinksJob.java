@@ -10,6 +10,7 @@ import lapsePlus.XMLConfig;
 import lapsePlus.XMLConfig.SinkDescription;
 import lapsePlus.jdom.JDomHelper;
 import lapsePlus.utils.StringUtils;
+import lapsePlus.utils.XMLConfigWrapper;
 import lapsePlus.views.SinkView.ViewContentProvider;
 
 import org.eclipse.core.runtime.Assert;
@@ -33,48 +34,52 @@ final class ComputeSinksJob extends Job {
 
 	ComputeSinksJob(final ViewContentProvider contentProvider, final TableViewer viewer) {
 		super("Computing Sinks");
+
 		this.contentProvider = contentProvider;
 		this.viewer = viewer;
 	}
 
 	protected IStatus run(final IProgressMonitor monitor) {
-	    final ViewContentProvider cp = ((ViewContentProvider) viewer.getContentProvider());
-	    cp.clearMatches();
+	    contentProvider.clearMatches();
+
 	    Display.getDefault().syncExec(new Runnable() {
 	        public void run() {
-	            if (cp.getMatchCount() > 0) {
+	            if (contentProvider.getMatchCount() > 0) {
 	                monitor.subTask("Clearing the results");
 	                viewer.refresh();
 	            }
 	        }
 	    });
+	    
 	    contentProvider.getStatisticsManager().clearMatches();
-	    IJavaModel model = JavaModelManager.getJavaModelManager().getJavaModel();
+	    final IJavaModel model = JavaModelManager.getJavaModelManager().getJavaModel();
 	    IJavaProject[] projects;
+
 	    try {
 	        projects = model.getJavaProjects();
 	    } catch (JavaModelException e) {
 	        log(e.getMessage(), e);
 	        return Status.CANCEL_STATUS;
 	    }
-	    Collection<SinkDescription> sinks = XMLConfig.readSinks("sinks.xml");
-	    //Assert.isNotNull(sinks, "Could not parse the sinks");
+
 	    int Matches = 0, Unsafe = 0;
-	    for (int i = 0; i < projects.length; i++) {
-	        IJavaProject project = (IJavaProject) projects[i];
-	        // if(!project.isOpen()) {
-	        // System.out.println("Skipping " + project);
-	        // continue;
-	        // }
+	    for(final IJavaProject project : projects) {
+//	        if(!project.isOpen()) {
+//	        	log("------------------ Project "+ StringUtils.cutto(project.getProject().getName(), 20) + " (skipping) ------------------ ");
+//	        	continue;
+//	        }
+
 	        log("------------------ Project "+ StringUtils.cutto(project.getProject().getName(), 20) + "------------------ ");
+		    final Collection<SinkDescription> sinks = XMLConfigWrapper.readSinks(project.getProject());
+		    
 	        int matches = 0, unsafe = 0;
 	        for (Iterator<SinkDescription> descIter = sinks.iterator(); descIter.hasNext();) {
 	            XMLConfig.SinkDescription desc = descIter.next();
 	            Assert.isNotNull(desc);
-	            log("Analyzing project " + project.getProject().getName()
-	                + ": processing method " + desc.getID() + "...");
-	            monitor.subTask("Project " + project.getProject().getName()
-	                + ": processing method " + desc.getID() + "...");
+
+	            log("Analyzing project " + project.getProject().getName() + ": processing method " + desc.getID() + "...");
+	            monitor.subTask("Project " + project.getProject().getName() + ": processing method " + desc.getID() + "...");
+	            
 	            //int matchesForMethod = matches;
 	            int index=desc.getMethodName().lastIndexOf('.');
 	            char aux=(desc.getMethodName().charAt(index+1));
@@ -137,7 +142,7 @@ final class ComputeSinksJob extends Job {
 	                SinkMatch match = new SinkMatch(message, expr, element
 	                    .getCompilationUnit(), element.getResource(), desc.getID(), element
 	                    .getMember(), desc.getCategoryName(), isError, hasSource);
-	                cp.addMatch(match);
+	                contentProvider.addMatch(match);
 	                matches++;
 	                if (isError) unsafe++;
 	            }
@@ -165,9 +170,9 @@ final class ComputeSinksJob extends Job {
 	            viewer.refresh();
 	        }
 	    });
-	    Assert.isTrue(cp.getMatchCount() == Matches, 
+	    Assert.isTrue(contentProvider.getMatchCount() == Matches, 
 	        "There is a mismatch between the number of metches in the view (" + 
-	        cp.getMatchCount() + ") and the total number of matches (" + 
+	        contentProvider.getMatchCount() + ") and the total number of matches (" + 
 	        Matches + ")" );
 	    log("\n" + StringUtils.cutto("All projects", 20) + "\t:\t" + Matches
 	        + "\ttotal sink(s),\t" + Unsafe + "\tunsafe sink(s)");

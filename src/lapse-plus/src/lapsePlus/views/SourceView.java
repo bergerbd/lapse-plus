@@ -603,34 +603,6 @@ public class SourceView extends ViewPart {
 		}
 	}
 
-	public static boolean isSourceName(String identifier) {
-		Collection sources = XMLConfig.readSources("sources.xml");
-		for(Iterator iter = sources.iterator(); iter.hasNext(); ){
-			XMLConfig.SourceDescription sourceDesc = (XMLConfig.SourceDescription) iter.next();
-			int i=sourceDesc.getMethodName().lastIndexOf('.');
-			String sub=sourceDesc.getMethodName().substring(i+1);
-			if(sub.equals(identifier)){
-				return true;
-			}
-		}
-	
-		// none matched
-		return false;
-	}
-
-    public static boolean isSafeName(String identifier) {
-		Collection safes = XMLConfig.readSafes("safes.xml");
-		for(Iterator iter = safes.iterator(); iter.hasNext(); ){
-			XMLConfig.SafeDescription safeDesc = (XMLConfig.SafeDescription) iter.next();
-			if(safeDesc.getMethodName().equals(identifier)){
-				return true;
-			}
-		}
-	
-		// none matched
-		return false;
-    }
-
     static void log(String message, Throwable e) {
         LapsePlugin.trace(LapsePlugin.SOURCE_DEBUG, "Source view: " + message, e);
     }

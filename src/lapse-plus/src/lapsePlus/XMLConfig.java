@@ -215,7 +215,7 @@ public class XMLConfig {
 		try {
             DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
-            Document doc = docBuilder.parse(new File(base + fileName));
+            Document doc = docBuilder.parse(new File(base, fileName));
 
             // normalize text representation
             doc.getDocumentElement ().normalize ();
@@ -267,7 +267,7 @@ public class XMLConfig {
 		try {
             DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
-            Document doc = docBuilder.parse(new File(base + fileName));
+            Document doc = docBuilder.parse(new File(base, fileName));
 
             // normalize text representation
             doc.getDocumentElement ().normalize ();
@@ -312,7 +312,7 @@ public class XMLConfig {
 		try {
             DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
-            Document doc = docBuilder.parse(new File(base + fileName));
+            Document doc = docBuilder.parse(new File(base, fileName));
 
             // normalize text representation
             doc.getDocumentElement ().normalize ();
@@ -476,8 +476,7 @@ public class XMLConfig {
     }
 	
 	public static String getPlugingBasePath(){
-		LapsePlugin plugin = LapsePlugin.getDefault();
-		URL base = plugin.getDescriptor().getInstallURL();
+		URL base = LapsePlugin.getDefault().getBundle().getEntry("/");
 		
 		try {
 			return FileLocator.toFileURL(base).getFile() + "/";

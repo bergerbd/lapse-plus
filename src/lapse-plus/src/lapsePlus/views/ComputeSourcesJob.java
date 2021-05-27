@@ -6,11 +6,11 @@ import java.util.Iterator;
 import lapsePlus.CallerFinder;
 import lapsePlus.LapsePlugin;
 import lapsePlus.Utils;
-import lapsePlus.XMLConfig;
 import lapsePlus.MethodSearchRequestor.MethodDeclarationsSearchRequestor;
 import lapsePlus.Utils.MethodDeclarationUnitPair;
 import lapsePlus.XMLConfig.SourceDescription;
 import lapsePlus.utils.StringUtils;
+import lapsePlus.utils.XMLConfigWrapper;
 import lapsePlus.views.SourceView.ViewContentProvider;
 
 import org.eclipse.core.runtime.CoreException;
@@ -41,12 +41,7 @@ final class ComputeSourcesJob extends Job {
 	}
 
 	protected IStatus run(IProgressMonitor monitor) {
-
-
-		//Clear matches
 		contentProvider.clearMatches();
-
-		//((ViewContentProvider) viewer.getContentProvider()).clearMatches();
 
 		Display.getDefault().syncExec(new Runnable() {
 			public void run() {
@@ -54,7 +49,7 @@ final class ComputeSourcesJob extends Job {
 			}
 		});
 
-		IJavaModel model = JavaModelManager.getJavaModelManager().getJavaModel();
+		final IJavaModel model = JavaModelManager.getJavaModelManager().getJavaModel();
 		IJavaProject[] projects;
 
 		try {
@@ -64,21 +59,15 @@ final class ComputeSourcesJob extends Job {
 			return Status.CANCEL_STATUS;
 		}
 
-		for (int i = 0; i < projects.length; i++) {
-			final IJavaProject project = projects[i];
-
-			SourceView.log(
-					"------------------ Project " + 
-							StringUtils.cutto(project.getProject().getName(), 20) + 
-					"------------------ ");
-
-			//				if(!project.isOpen()) {
-			//					System.out.println("Skipping " + project);
-			//					continue;
-			//				}
-
-			Collection<SourceDescription> sources = XMLConfig.readSources("sources.xml");
-
+	    for(final IJavaProject project : projects) {
+//	        if(!project.isOpen()) {
+//	        	SourceView.log("------------------ Project "+ StringUtils.cutto(project.getProject().getName(), 20) + " (skipping) ------------------ ");
+//	        	continue;
+//	        }
+	        
+	        SourceView.log("------------------ Project " + StringUtils.cutto(project.getProject().getName(), 20) +  "------------------ ");
+		    final Collection<SourceDescription> sources = XMLConfigWrapper.readSources(project.getProject());
+		    
 			if(sources == null || sources.size() == 0) {
 				SourceView.logError("No interesting methods in " + project.getResource().getName());
 				continue;

@@ -303,7 +303,7 @@ public class SinkView extends ViewPart {
             new LapseCheckboxActionGroup(
                 new IAction[]{
                 hideSafeAction, hideNoSourceAction, showSQLAction, showXSSAction, showPTAction,showHttpResponseAction,showCommandInjectionAction,showLDAPAction,showXPathAction,showRegexAction},
-                new boolean[]{true, true, false, false, false,false,false,false,false});
+                new boolean[]{true, true, false, false, false,false,false,false,false,false, false});
         group.addActions(bars.getMenuManager());
     }
 

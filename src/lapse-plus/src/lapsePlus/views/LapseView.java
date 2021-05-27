@@ -13,6 +13,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.Objects;
+
 import lapsePlus.CallerFinder;
 import lapsePlus.DefinitionLocation;
 import lapsePlus.HistoryDefinitionLocation;
@@ -76,7 +78,6 @@ import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextSelection;
-import org.eclipse.jface.util.Assert;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IBaseLabelProvider;
 import org.eclipse.jface.viewers.IDoubleClickListener;
@@ -1512,7 +1513,7 @@ class LapseCopyAction extends Action {
         
     	super("LapseCopyAction");//we create the copy action with the name given
     	
-        Assert.isNotNull(clipboard);
+        Objects.nonNull(clipboard);
         
         //WorkbenchHelp.setHelp(this, IJavaHelpContextIds.CALL_HIERARCHY_COPY_ACTION);
         
